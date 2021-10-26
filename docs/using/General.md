@@ -37,6 +37,8 @@ bot.gateway.log = {"console":False, "file":"gatewaylog.txt"}
 
 ### general variables
 ```python
+bot.log #logging
+bot.locale #default is en-US
 bot._Client__user_token
 bot._Client__user_email
 bot._Client__user_password
@@ -46,12 +48,12 @@ bot._Client__user_agent
 bot._Client__super_properties
 bot._Client__proxy_host
 bot._Client__proxy_port
+bot.userData
 bot.api_version
-bot.discord #REST api base url
-bot.websocketurl
 bot.s #requests.Session object
+bot.discord #REST api base url
+bot.websocketurl #url for gateway/websockets
 bot.gateway #GatewayServer object
-bot.Embedder #Embedder object (helps with making embeds)
 bot.Science #placeholder variable for science events
 ```
 

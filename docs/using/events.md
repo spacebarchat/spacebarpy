@@ -1,5 +1,5 @@
 **Gateway Event Checking**
-
+\*some of these events are not implemented info Fosscord yet
 | Function | Gateway Event |
 | --- | ----------- |
 | resp.event.ready | READY |
