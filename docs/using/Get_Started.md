@@ -24,8 +24,6 @@ bot = fossbotpy.Client(token="token", base_url="https://dev.fosscord.com/api/v9/
 
 -   **email** (Optional[str])
 -   **password** (Optional[str])
--   **secret** (Optional[str]) - the 2FA secret string
--   **code** (Optional[str]) - TOTP 6 digit code
 -   **token** (Optional[str]) - if you'd like to use fossbotpy without auth, input an invalid token like "poop"
 -   **remote\_auth** (Optional[bool/str]) - use remote authentication (scan qr code) to login. Set as filename if you'd like to set a specific file location for the qr code image. Defaults to True
 -   **proxy\_host** (Optional[str]) - proxy host without http(s) part

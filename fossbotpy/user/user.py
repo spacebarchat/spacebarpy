@@ -173,21 +173,6 @@ class User(object):
 		body = {"banner":"data:image/png;base64,"+encodedImage}
 		return Wrapper.sendRequest(self.s, 'patch', url, body, log=self.log)
 
-	def enable2FA(self, code, secret, password): #returns new token plus backup codes
-		url = self.fosscord+"users/@me/mfa/totp/enable"
-		body = {"code": code, "secret": secret, "password": password}
-		return Wrapper.sendRequest(self.s, 'post', url, body, log=self.log)
-
-	def disable2FA(self, code):
-		url = self.fosscord+"users/@me/mfa/totp/disable"
-		body = {"code": code}
-		return Wrapper.sendRequest(self.s, 'post', url, body, log=self.log)
-
-	def getBackupCodes(self, password, regenerate):
-		url = self.fosscord+"users/@me/mfa/codes"
-		body = {"password": password, "regenerate": regenerate}
-		return Wrapper.sendRequest(self.s, 'post', url, body, log=self.log)
-
 	def disableAccount(self, password):
 		url = self.fosscord+"users/@me/disable"
 		body = {"password": password}
@@ -196,16 +181,6 @@ class User(object):
 	def deleteAccount(self, password):
 		url = self.fosscord+"users/@me/delete"
 		body = {"password": password}
-		return Wrapper.sendRequest(self.s, 'post', url, body, log=self.log)
-
-	def setPhone(self, number):
-		url = self.fosscord+"users/@me/phone"
-		body = {"phone": number}
-		return Wrapper.sendRequest(self.s, 'post', url, body, log=self.log)
-
-	def validatePhone(self, number, code):
-		url = self.fosscord+"phone-verifications/verify"
-		body = {"phone": number,"code": str(code)}
 		return Wrapper.sendRequest(self.s, 'post', url, body, log=self.log)
 
 	'''

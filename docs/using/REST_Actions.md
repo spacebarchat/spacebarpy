@@ -36,8 +36,6 @@ bot.login('email@email.com', 'password')
 - captcha (Optional[str]) - captcha key
 - source (Optional) - unknown
 - gift_code_sku_id (Optional) - unknown
-- secret (Optional[str]) - 2FA secret
-- code (Optional[str]) - 2FA TOTP (6-digit) code
 ###### Returns:
 (login response object, xfingerprint string)
 
@@ -251,43 +249,6 @@ bot.setBanner('./catpics/001.png')
 ###### Parameters:
 - image path (str)
 
-##### ```getTOTPurl```
-```python
-bot.getTOTPurl(secret = bot._Client__totp_secret)
-```
-###### Parameters:
-- 2FA secret (str)
-
-##### ```calculateTOTPcode```
-```python
-bot.calculateTOTPcode(secret = bot._Client__totp_secret)
-```
-###### Parameters:
-- 2FA secret (str)
-
-##### ```enable2FA```
-automatically updates your token
-```python
-bot.enable2FA()
-```
-
-##### ```disable2FA```
-automatically updates your token
-```python
-bot.disable2FA()
-```
-###### Parameters:
-- code (Optional[str]) - TOTP code. Defaults to "calculate"
-- clearSecretAfter (Optional[bool]) - clear TOTP secret from memory after running. Defaults to False (to prevent accidental account loss if TOTP code fails)
-
-##### ```getBackupCodes```
-\*bot.\_Client\_\_user\_password needs to be set before running this
-```python
-bot.getBackupCodes()
-```
-###### Parameters:
-- regenerate (Optional[bool]) - defaults to False
-
 ##### ```disableAccount```
 ```python
 bot.disableAccount("verysecurepass")
@@ -301,21 +262,6 @@ bot.deleteAccount("verysecurepass")
 ```
 ###### Parameters:
 - password (str)
-
-##### ```setPhone```
-```python
-bot.setPhone("+12222222222")
-```
-###### Parameters:
-- number (str) - format: +(country-code)(rest of phone number)
-
-##### ```validatePhone```
-```python
-bot.validatePhone("+12222222222", "123456")
-```
-###### Parameters:
-- number (str) - the phone number; format: +(country-code)(rest of phone number)
-- code (str) - the code discord texts you
 
 ##### ```setDMscanLvl```
 ```python

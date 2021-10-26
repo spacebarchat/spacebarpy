@@ -11,7 +11,6 @@ imports = Imports(
 		"User": "fossbotpy.user.user",
 		"Stickers": "fossbotpy.stickers.stickers",
 		"Science": "fossbotpy.science.science",
-		"TOTP": "fossbotpy.utils.totp",
 	}
 )
 
@@ -28,15 +27,14 @@ import random
 
 #client initialization
 class Client:
-	__slots__ = ['log', 'locale', '__user_token', '__user_email', '__user_password', '__totp_secret', '__xfingerprint', 'userData', '__proxy_host', '__proxy_port', 'api_version', 'fosscord', 'websocketurl', '__user_agent', 's', '__super_properties', 'gateway', 'Science']
-	def __init__(self, email="", password="", secret="", code="", token="", proxy_host=None, proxy_port=None, user_agent="random", locale="en-US", build_num="request", base_url="https://dev.fosscord.com/api/v9/", log={"console":True, "file":False}):
+	__slots__ = ['log', 'locale', '__user_token', '__user_email', '__user_password', '__xfingerprint', 'userData', '__proxy_host', '__proxy_port', 'api_version', 'fosscord', 'websocketurl', '__user_agent', 's', '__super_properties', 'gateway', 'Science']
+	def __init__(self, email="", password="", token="", proxy_host=None, proxy_port=None, user_agent="random", locale="en-US", build_num="request", base_url="https://dev.fosscord.com/api/v9/", log={"console":True, "file":False}):
 		#step 1: vars
 		self.log = log
 		self.locale = locale
 		self.__user_token = token
 		self.__user_email = email
 		self.__user_password = password
-		self.__totp_secret = secret
 		self.__xfingerprint = ""
 		self.userData = {} #used if science requests are used
 		self.__proxy_host = None if proxy_host in (None,False) else proxy_host
@@ -87,7 +85,7 @@ class Client:
 		#step 6: token/authorization/fingerprint (also part of headers, except for fingerprint)
 		tokenProvided = self.__user_token not in ("",None,False)
 		if not tokenProvided:
-			loginResponse, self.__xfingerprint = imports.Login(self.s, self.fosscord, log).login(email=email, password=password, undelete=False, captcha=None, source=None, gift_code_sku_id=None, secret=secret, code=code)
+			loginResponse, self.__xfingerprint = imports.Login(self.s, self.fosscord, log).login(email=email, password=password, undelete=False, captcha=None, source=None, gift_code_sku_id=None)
 			self.__user_token = loginResponse.json().get('token') #update token from "" to actual value
 		self.s.headers.update({"Authorization": self.__user_token}) #update headers
 		#step 7: gateway (object initialization)
@@ -118,8 +116,8 @@ class Client:
 	'''
 	start
 	'''
-	def login(self, email, password, undelete=False, captcha=None, source=None, gift_code_sku_id=None, secret="", code=""):
-		return imports.Login(self.s, self.fosscord, self.log).login(email, password, undelete, captcha, source, gift_code_sku_id, secret, code)
+	def login(self, email, password, undelete=False, captcha=None, source=None, gift_code_sku_id=None):
+		return imports.Login(self.s, self.fosscord, self.log).login(email, password, undelete, captcha, source, gift_code_sku_id)
 
 	def getXFingerprint(self):
 		return imports.Login(self.s, self.fosscord, self.log).getXFingerprint()
@@ -367,58 +365,11 @@ class Client:
 	def setBanner(self, imagePath):
 		return imports.User(self.fosscord,self.s,self.log).setBanner(imagePath)
 
-	#2FA
-	def calculateTOTPcode(self, secret="default"): #need to put this function here (instead of in login folder or user folder) because it updates the secret (if and only if secret == "")
-		if secret == "default":
-			if self.__totp_secret == "":
-				self.__totp_secret = ''.join(random.choice(list('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567')) for _ in range(16)) #random base32 (len 16)
-			secret = self.__totp_secret
-		if "?secret=" in secret:
-			secret = secret[secret.index("?secret=")+8: secret.index("?secret=")+24]
-		return imports.TOTP(secret).generateTOTP(), secret #secret is returned just in case it wasn't set at the beginning.
-
-	def getTOTPurl(self, secret): #use this to store your totp secret/qr pic; btw url format is otpauth://totp/fosscord:EMAIL?secret=SECRET&issuer=fosscord
-		url = "otpauth://totp/fosscord"
-		if self.__user_email != "":
-			url += ":"+self.__user_email
-		url += "?secret="+secret+"&issuer=fosscord"
-		return url
-
-	def enable2FA(self): #this also returns backup codes (value of key "backup_codes"). USER PASSWORD NEEDS TO BE SET BEFORE THIS IS RUN
-		code = self.calculateTOTPcode()[0]
-		result = imports.User(self.fosscord,self.s,self.log).enable2FA(code, secret=self.__totp_secret, password=self.__user_password)
-		self.__user_token = result.json()["token"]
-		self.s.headers['Authorization'] = self.__user_token
-		return result
-
-	def disable2FA(self, code="calculate", clearSecretAfter=False): #either set your token before running this or input a code.
-		if code == "calculate":
-			code = self.calculateTOTPcode()[0] #this will generate a random secret if you dont have one set, so...set your secret before running this
-		code = str(code) #just in case
-		result = imports.User(self.fosscord,self.s,self.log).disable2FA(code)
-		self.__user_token = result.json()["token"]
-		self.s.headers['Authorization'] = self.__user_token
-		if clearSecretAfter: #this is dangerous (even though disable2FA should error out before getting to this point if something goes wrong). If you already have your secret saved, clear away. By default this is set to False to avoid any mishaps.
-			self.__totp_secret = ""
-		return result
-
-	def getBackupCodes(self, regenerate=False):
-		return imports.User(self.fosscord,self.s,self.log).getBackupCodes(self.__user_password, regenerate)
-
 	def disableAccount(self, password):
 		return imports.User(self.fosscord,self.s,self.log).disableAccount(password)
 
 	def deleteAccount(self, password):
 		return imports.User(self.fosscord,self.s,self.log).deleteAccount(password)
-
-	def setPhone(self, number):
-		return imports.User(self.fosscord,self.s,self.log).setPhone(number)
-
-	def validatePhone(self, number, code):
-		result = imports.User(self.fosscord,self.s,self.log).validatePhone(number, code)
-		if result.status_code == 200 and "token" in result.json():
-			self.__user_token = result.json()["token"]
-		return result
 
 	'''
 	User Settings, continued
@@ -744,7 +695,7 @@ class Client:
 			if self.__xfingerprint == "":
 				self.__xfingerprint = imports.Login(self.s, self.fosscord, self.log).getXFingerprint()
 		#initialize Science object
-		self.Science = imports.Science(self.fosscord, self.s, self.log, self.userData["analytics_token"], self.userData["id"], self.__xfingerprint)
+		self.Science = imports.Science(self.fosscord, self.s, self.log, self.userData.get("analytics_token", ""), self.userData["id"], self.__xfingerprint)
 
 	def science(self, events): #the real prep for science events happens down here, and only once for each client obj
 		if self.Science == "":

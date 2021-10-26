@@ -1,5 +1,4 @@
 from ..RESTapiwrap import *
-from ..utils.totp import TOTP
 from ..utils.contextproperties import ContextProperties
 import time
 
@@ -23,7 +22,7 @@ class Login:
 			Logger.log('xfingerprint could not be fetched.', None, self.log)
 		return xfingerprint
 
-	def login(self, email, password, undelete, captcha, source, gift_code_sku_id, secret, code):
+	def login(self, email, password, undelete, captcha, source, gift_code_sku_id):
 		url = self.fosscord + "auth/login"
 		self.xfingerprint = self.getXFingerprint()
 		self.editedS.headers.update({"X-Fingerprint": self.xfingerprint})
@@ -36,21 +35,4 @@ class Login:
 			"gift_code_sku_id": gift_code_sku_id
 		}
 		response = Wrapper.sendRequest(self.editedS, 'post', url, body, log=self.log)
-		result = response.json()
-		if result.get('mfa') == True and result.get('sms') == False: #sms login not implemented yet
-			time.sleep(2) #2 seconds is minimal, don't want to look too automated
-			ticket = result['ticket']
-			if secret != "":
-				code = TOTP(secret).generateTOTP()
-			code = str(code) #just in case an int is inputted
-			totpUrl = self.fosscord+"auth/mfa/totp"
-			totpBody = {
-				"code": code,
-				"ticket": ticket,
-				"login_source": source,
-				"gift_code_sku_id": gift_code_sku_id
-			}
-			totpResponse = Wrapper.sendRequest(self.editedS, 'post', totpUrl, totpBody, log=self.log)
-			return totpResponse, self.xfingerprint
-		else:
-			return response, self.xfingerprint
+		return response, self.xfingerprint

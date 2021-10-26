@@ -42,7 +42,6 @@ bot.locale #default is en-US
 bot._Client__user_token
 bot._Client__user_email
 bot._Client__user_password
-bot._Client__totp_secret
 bot._Client__xfingerprint
 bot._Client__user_agent
 bot._Client__super_properties
