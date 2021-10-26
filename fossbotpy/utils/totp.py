@@ -1,4 +1,4 @@
-#handles TOTP (Time-based One-Time Password) code calculation for Discord. Discord's totp refreshes every 30 seconds.
+#handles TOTP (Time-based One-Time Password) code calculation for fosscord. fosscord's totp refreshes every 30 seconds.
 #implementation is the same as https://github.com/pyauth/pyotp/ (most of the functions are just copy-pasted)
 
 import time, datetime

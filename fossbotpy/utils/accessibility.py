@@ -1,4 +1,4 @@
-#those accessibility numbers that discord uses for its "science"
+#those accessibility numbers that fosscord uses for its "science"
 
 class ACCESSIBILITY_FEATURES:
 	SCREENREADER = 1 << 0

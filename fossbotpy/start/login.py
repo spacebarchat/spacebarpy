@@ -9,14 +9,14 @@ class Login:
 	'''
 	Manages HTTP authentication
 	'''
-	__slots__ = ['discord', 'log', 'editedS', 'xfingerprint']
-	def __init__(self, s, discordurl, log):
-		self.discord = discordurl
+	__slots__ = ['fosscord', 'log', 'editedS', 'xfingerprint']
+	def __init__(self, s, fosscordurl, log):
+		self.fosscord = fosscordurl
 		self.log = log
 		self.editedS = Wrapper.editedReqSession(s, {"remove": ["Authorization", "X-Fingerprint"]})
 
 	def getXFingerprint(self):
-		url = self.discord + "experiments"
+		url = self.fosscord + "experiments"
 		reqxfinger = Wrapper.sendRequest(self.editedS, 'get', url, headerModifications={"update":{"X-Context-Properties":ContextProperties.get("/app")}}, log=self.log)
 		xfingerprint = reqxfinger.json().get('fingerprint')
 		if not xfingerprint:
@@ -24,7 +24,7 @@ class Login:
 		return xfingerprint
 
 	def login(self, email, password, undelete, captcha, source, gift_code_sku_id, secret, code):
-		url = self.discord + "auth/login"
+		url = self.fosscord + "auth/login"
 		self.xfingerprint = self.getXFingerprint()
 		self.editedS.headers.update({"X-Fingerprint": self.xfingerprint})
 		body = {
@@ -43,7 +43,7 @@ class Login:
 			if secret != "":
 				code = TOTP(secret).generateTOTP()
 			code = str(code) #just in case an int is inputted
-			totpUrl = self.discord+"auth/mfa/totp"
+			totpUrl = self.fosscord+"auth/mfa/totp"
 			totpBody = {
 				"code": code,
 				"ticket": ticket,

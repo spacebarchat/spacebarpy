@@ -1,16 +1,11 @@
 class Session:
 	__slots__ = []
 	settings_ready = {}
-	settings_ready_supp = {}
-	def __init__(self, input_settings_ready, input_settings_ready_supp):
+	def __init__(self, input_settings_ready):
 		Session.settings_ready = input_settings_ready
-		Session.settings_ready_supp = input_settings_ready_supp
 
 	def setSettingsReady(self, data):
 		Session.settings_ready = dict(data)
-	
-	def setSettingsReadySupp(self, data):
-		Session.settings_ready_supp = dict(data)
 
 	@property
 	def guild(self):
@@ -29,12 +24,7 @@ class Session:
 		return UserGuildSetting
 
 	def read(self): #returns all Session settings
-		return [self.settings_ready, self.settings_ready_supp]
-
-	def saveMemory(self): #deletes some unused data
-		self.settings_ready['users'] = []
-		self.settings_ready_supp['merged_members'] = []
-		self.settings_ready_supp['merged_presences']['guilds'] = []
+		return self.settings_ready
 
 	###***USER***###
 	@property
@@ -270,11 +260,11 @@ class Guild(Session):
 		return Session.settings_ready['guilds'][self.guildID]['banner']
 
 	@property
-	def discoverySplash(self): #not sure what this is about, something about server discoverability i guess (https://discord.com/developers/docs/resources/guild)
+	def discoverySplash(self): #not sure what this is about, something about server discoverability i guess (https://fosscord.com/developers/docs/resources/guild)
 		return Session.settings_ready['guilds'][self.guildID]['discovery_splash']
 
 	@property
-	def msgNotificationSettings(self): #returns an int, 0=all messages, 1=only mentions (https://discord.com/developers/docs/resources/guild#guild-object-default-message-notification-level)
+	def msgNotificationSettings(self): #returns an int, 0=all messages, 1=only mentions (https://fosscord.com/developers/docs/resources/guild#guild-object-default-message-notification-level)
 		return Session.settings_ready['guilds'][self.guildID]['default_message_notifications']
 
 	@property
@@ -282,11 +272,11 @@ class Guild(Session):
 		return Session.settings_ready['guilds'][self.guildID]['rules_channel_id']
 
 	@property
-	def verificationLvl(self): #returns an int, 0-4 (https://discord.com/developers/docs/resources/guild#guild-object-verification-level)
+	def verificationLvl(self): #returns an int, 0-4 (https://fosscord.com/developers/docs/resources/guild#guild-object-verification-level)
 		return Session.settings_ready['guilds'][self.guildID]['verification_level']
 
 	@property
-	def features(self): #returns a list of strings (https://discord.com/developers/docs/resources/guild#guild-object-guild-features)
+	def features(self): #returns a list of strings (https://fosscord.com/developers/docs/resources/guild#guild-object-guild-features)
 		return Session.settings_ready['guilds'][self.guildID]['features']
 
 	@property
@@ -298,7 +288,7 @@ class Guild(Session):
 		return Session.settings_ready['guilds'][self.guildID]['region']
 
 	@property
-	def applicationID(self): #returns application id of the guild creator if it is bot-created (https://discord.com/developers/docs/resources/guild#guild-object-guild-features)
+	def applicationID(self): #returns application id of the guild creator if it is bot-created (https://fosscord.com/developers/docs/resources/guild#guild-object-guild-features)
 		return Session.settings_ready['guilds'][self.guildID]['application_id']
 
 	@property
@@ -306,7 +296,7 @@ class Guild(Session):
 		return Session.settings_ready['guilds'][self.guildID]['afk_channel_id']
 
 	@property
-	def icon(self): #https://discord.com/developers/docs/reference#image-formatting
+	def icon(self): #https://fosscord.com/developers/docs/reference#image-formatting
 		return Session.settings_ready['guilds'][self.guildID]['icon']
 
 	@property
@@ -318,7 +308,7 @@ class Guild(Session):
 		return Session.settings_ready['guilds'][self.guildID]['max_video_channel_users']
 
 	@property
-	def roles(self): #https://discord.com/developers/docs/topics/permissions#role-object
+	def roles(self): #https://fosscord.com/developers/docs/topics/permissions#role-object
 		return Session.settings_ready['guilds'][self.guildID]['roles']
 
 	@property
@@ -326,19 +316,19 @@ class Guild(Session):
 		return Session.settings_ready['guilds'][self.guildID]['public_updates_channel_id']
 
 	@property
-	def systemChannelFlags(self): #https://discord.com/developers/docs/resources/guild#guild-object-system-channel-flags
+	def systemChannelFlags(self): #https://fosscord.com/developers/docs/resources/guild#guild-object-system-channel-flags
 		return Session.settings_ready['guilds'][self.guildID]['system_channel_flags']
 
 	@property
-	def mfaLvl(self): #https://discord.com/developers/docs/resources/guild#guild-object-mfa-level
+	def mfaLvl(self): #https://fosscord.com/developers/docs/resources/guild#guild-object-mfa-level
 		return Session.settings_ready['guilds'][self.guildID]['mfa_level']
 
 	@property
-	def afkTimeout(self): #returns type int, unit seconds, https://discord.com/developers/docs/resources/guild
+	def afkTimeout(self): #returns type int, unit seconds, https://fosscord.com/developers/docs/resources/guild
 		return Session.settings_ready['guilds'][self.guildID]['afk_timeout']
 
 	@property
-	def hashes(self): #https://github.com/discord/discord-api-docs/issues/1642
+	def hashes(self): #https://github.com/fosscord/fosscord-api-docs/issues/1642
 		return Session.settings_ready['guilds'][self.guildID]['guild_hashes']
 
 	@property
@@ -346,7 +336,7 @@ class Guild(Session):
 		return Session.settings_ready['guilds'][self.guildID]['system_channel_id']
 
 	@property
-	def lazy(self): #slightly different naming format since it returns a boolean (https://luna.gitlab.io/discord-unofficial-docs/lazy_guilds.html)
+	def lazy(self): #slightly different naming format since it returns a boolean (https://luna.gitlab.io/fosscord-unofficial-docs/lazy_guilds.html)
 		return Session.settings_ready['guilds'][self.guildID]['lazy']
 
 	@property
@@ -362,7 +352,7 @@ class Guild(Session):
 		return Session.settings_ready['guilds'][self.guildID]['threads']
 
 	@property
-	def explicitContentFilter(self): #https://discord.com/developers/docs/resources/guild#guild-object-explicit-content-filter-level
+	def explicitContentFilter(self): #https://fosscord.com/developers/docs/resources/guild#guild-object-explicit-content-filter-level
 		return Session.settings_ready['guilds'][self.guildID]['explicit_content_filter']
 
 	@property
@@ -395,7 +385,7 @@ class Guild(Session):
 		Session.settings_ready['guilds'][self.guildID]['channels'].pop(channelID, None)
 
 	@property
-	def channelsAndCategories(self): #returns all categories and all channels, all the data about that, wall of data so it can be a bit overwhelming, useful if you want to check how many channels your server has since discord counts categories as channels
+	def channelsAndCategories(self): #returns all categories and all channels, all the data about that, wall of data so it can be a bit overwhelming, useful if you want to check how many channels your server has since fosscord counts categories as channels
 		return Session.settings_ready['guilds'][self.guildID]['channels']
 
 	@property
@@ -409,7 +399,7 @@ class Guild(Session):
 	@property
 	def categories(self): #all data about guild categories, can be overwhelming
 		all_categories = {}
-		for i in self.channelsAndCategories: #https://discord.com/developers/docs/resources/channel#channel-object-channel-types
+		for i in self.channelsAndCategories: #https://fosscord.com/developers/docs/resources/channel#channel-object-channel-types
 			if self.channelsAndCategories[i]['type'] in ('guild_category', 4):
 				all_categories[i] = self.channelsAndCategories[i]
 		return all_categories
@@ -424,7 +414,7 @@ class Guild(Session):
 	@property
 	def channels(self): #all data about all guild channels, can be overwhelming
 		all_channels = {}
-		for i in self.channelsAndCategories: #https://discord.com/developers/docs/resources/channel#channel-object-channel-types
+		for i in self.channelsAndCategories: #https://fosscord.com/developers/docs/resources/channel#channel-object-channel-types
 			if self.channelsAndCategories[i]['type'] not in ('guild_category', 4):
 				all_channels[i] = self.channelsAndCategories[i]
 		return all_channels
@@ -435,10 +425,6 @@ class Guild(Session):
 
 	def channel(self, channelID):
 		return self.channels[channelID]
-
-	@property
-	def voiceStates(self): #https://discord.com/developers/docs/resources/voice#voice-state-object
-		return Session.settings_ready_supp['voice_states'][self.guildID]
 
 	@property
 	def me(self): #my roles, nick, etc in a guild

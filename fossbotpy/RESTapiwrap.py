@@ -111,7 +111,7 @@ class Wrapper:
 				if log:
 					text, color = Wrapper.logFormatter(function_name, body, part="body")
 					Logger.log(text, color, log)
-			# 5. put timeout in data if needed (when we don't want to wait for a response from discord)
+			# 5. put timeout in data if needed (when we don't want to wait for a response from fosscord)
 			if timeout != None:
 				data['timeout'] = timeout
 			# 6. the request

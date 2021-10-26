@@ -5,9 +5,9 @@ import random
 from ..utils.client_uuid import Client_UUID
 
 class Science(object):
-    __slots__ = ['discord', 's', 'log', 'analytics_token', 'xfingerprint', 'UUIDobj']
-    def __init__(self, discord, s, log, analytics_token, userID, xfingerprint): #s is the requests session object
-        self.discord = discord
+    __slots__ = ['fosscord', 's', 'log', 'analytics_token', 'xfingerprint', 'UUIDobj']
+    def __init__(self, fosscord, s, log, analytics_token, userID, xfingerprint): #s is the requests session object
+        self.fosscord = fosscord
         self.s = s
         self.log = log
         self.analytics_token = analytics_token
@@ -31,8 +31,8 @@ class Science(object):
         trackingProperties["client_uuid"] = self.UUIDobj.calculate(eventNum="default", userID="default", increment=True)
         return trackingProperties
 
-    def science(self, events): #https://luna.gitlab.io/discord-unofficial-docs/science_events.html
-        url = self.discord +"science"
+    def science(self, events): #https://luna.gitlab.io/fosscord-unofficial-docs/science_events.html
+        url = self.fosscord +"science"
         for event in events:
             if "type" not in event:
                 event["type"] = "keyboard_mode_toggled" #random default type

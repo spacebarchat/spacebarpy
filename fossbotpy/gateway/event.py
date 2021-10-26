@@ -8,10 +8,6 @@ class Event:
 		return self.response.get('t') == 'READY'
 
 	@property
-	def ready_supplemental(self):
-		return self.response.get('t') == 'READY_SUPPLEMENTAL'
-
-	@property
 	def activity_join_request(self): #not sure what this is
 		return self.response.get('t') == 'ACTIVITY_JOIN_REQUEST'
 
@@ -140,10 +136,6 @@ class Event:
 		return self.response.get('t') == 'INTEGRATION_DELETE'
 
 	@property
-	def interaction_successful(self):
-		return self.response.get('t') == 'INTERACTION_SUCCESS'
-
-	@property
 	def guild_member_list(self):
 		return self.response.get('t') == 'GUILD_MEMBER_LIST_UPDATE'
 
@@ -156,7 +148,11 @@ class Event:
 		return self.response.get('t') == 'GUILD_MEMBERS_CHUNK'
 
 	@property
-	def guild_member_removed(self): #only seems to get sent when you leave a guild (voluntarily or involuntarily)...but the server owner sees no such event? weird.
+	def guild_member_added(self):
+		return self.response.get('t') == 'GUILD_MEMBER_ADD'
+
+	@property
+	def guild_member_removed(self): 
 		return self.response.get('t') == 'GUILD_MEMBER_REMOVE'
 
 	@property
@@ -184,7 +180,7 @@ class Event:
 		return self.response.get('t') == 'LIBRARY_APPLICATION_UPDATE'
 
 	@property
-	def lobby(self): #idk...https://discord.com/developers/docs/game-sdk/lobbies...
+	def lobby(self): #idk...https://fosscord.com/developers/docs/game-sdk/lobbies...
 		return self.response.get('t') == 'LOBBY_CREATE'
 
 	@property

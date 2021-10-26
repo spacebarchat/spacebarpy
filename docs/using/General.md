@@ -74,7 +74,7 @@ bot.gateway._after_message_hooks #where all the gateway commands are added
 bot.gateway.interval #received from discord
 bot.gateway.session_id #received from discord
 bot.gateway.sequence #msg counter for heartbeating
-bot.gateway.READY #becomes True once READY_SUPPLEMENTAL is received
+bot.gateway.READY #becomes True once READY is received
 bot.gateway.connected #boolean
 bot.gateway.resumable #boolean
 bot.gateway._last_ack #when last HEARTBEAT_ACK was received
@@ -101,12 +101,6 @@ All of the session data:
 
 ``` python
 bot.gateway.session.read()
-```
-
-Save some memory by deleting essentially useless data (some user data from ready and ready supplemental):
-
-``` python
-bot.gateway.session.saveMemory()
 ```
 
 General data:
@@ -251,15 +245,16 @@ a requests.Response object. If the token is valid, the .json() should contain th
 
 ##### ```snowflake_to_unixts``` and ```unixts_to_snowflake```
 ```python
-bot.snowflake_to_unixts("842574767584182273")
-bot.unixts_to_snowflake("1620955878.87425")
+from fossbotpy.utils.snowflake import Snowflake
+Snowflake.snowflake_to_unixts("842574767584182273")
+Snowflake.unixts_to_snowflake("1620955878.87425")
 ```
 ###### Parameters:
-- snowflake or unixts (depending on which conversion you're using) (str/int/float)
+- snowflake or unixts (str/int/float)
 
 ###### Returns:
 bot.snowflake_to_unixts -> float        
-bot.unixts_to_snowflake -> int        
+bot.unixts_to_snowflake -> str        
 
 ### gateway functions
 

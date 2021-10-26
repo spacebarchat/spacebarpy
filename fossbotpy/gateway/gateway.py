@@ -112,7 +112,7 @@ class GatewayServer:
 		self.session_id = None
 		self.sequence = 0
 		self.READY = False #becomes True once READY is received
-		self.session = Session({},{})
+		self.session = Session({})
 
 		#websocket.enableTrace(True) #for debugging
 		self.zlib_streamed = True if '&compress=zlib-stream' in websocketurl else False
@@ -229,7 +229,7 @@ class GatewayServer:
 			self._last_err = None
 			self.session_id = response['d']['session_id']
 			settings_ready = resp.parsed.ready() #parsed
-			if not self.resetMembersOnSessionReconnect and self.session.read()[0]:
+			if not self.resetMembersOnSessionReconnect and self.session.read():
 				for guildID in settings_ready['guilds']:
 					settings_ready['guilds'][guildID]['members'] = self.session.guild(guildID).members
 			self.session.setSettingsReady(settings_ready)

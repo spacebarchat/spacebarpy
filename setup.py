@@ -13,8 +13,8 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'fossbotpy'
-DESCRIPTION = 'A Fosscord API Wrapper for Userbots/Selfbots written in Python.'
-URL = 'https://github.com'
+DESCRIPTION = 'A Fosscord API Wrapper written in Python.'
+URL = 'https://github.com/discordtehe/fossbotpy'
 EMAIL = ''
 AUTHOR = 'arandomnewaccount'
 REQUIRES_PYTHON = '>=2.7.0'
@@ -33,13 +33,7 @@ REQUIRED = [
 ]
 
 # What packages are optional?
-EXTRAS = {
-    'ra': [
-        'pycryptodome', 
-        'pyqrcode'
-        'pypng'
-    ]
-}
+EXTRAS = {}
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------

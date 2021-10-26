@@ -7,6 +7,7 @@ import base64
 
 from ..utils.fileparse import Fileparse
 from ..utils.contextproperties import ContextProperties
+from ..utils.snowflake import Snowflake
 from ..RESTapiwrap import *
 
 try:
@@ -16,21 +17,15 @@ except ImportError:
 	from urlparse import urlparse
 
 class Messages(object):
-	__slots__ = ['discord', 's', 'log']
-	def __init__(self, discord, s, log): #s is the requests session object
-		self.discord = discord
+	__slots__ = ['fosscord', 's', 'log']
+	def __init__(self, fosscord, s, log): #s is the requests session object
+		self.fosscord = fosscord
 		self.s = s
 		self.log = log
 
-	def calculateNonce(self, date="now"):
-		if date == "now":
-			date = datetime.datetime.now()
-		unixts = time.mktime(date.timetuple())
-		return str((int(unixts)*1000-1420070400000)*4194304)
-
 	#just the raw endpoint
 	def createDMraw(self, recipients):
-		url = self.discord+"users/@me/channels"
+		url = self.fosscord+"users/@me/channels"
 		if isinstance(recipients, str):
 			recipients = [recipients]
 		body = {"recipients": recipients}
@@ -48,20 +43,20 @@ class Messages(object):
 
 	#deleteChannel (also works for deleting dms/dm-groups)
 	def deleteChannel(self, channelID):
-		url = self.discord+'channels/'+channelID
+		url = self.fosscord+'channels/'+channelID
 		return Wrapper.sendRequest(self.s, 'delete', url, log=self.log)
 
 	def removeFromDmGroup(self, channelID, userID):
-		url = self.discord+'channels/'+channelID+'/recipients/'+userID
+		url = self.fosscord+'channels/'+channelID+'/recipients/'+userID
 		return Wrapper.sendRequest(self.s, 'delete', url, log=self.log)
 
 	def addToDmGroup(self, channelID, userID):
-		url = self.discord+'channels/'+channelID+'/recipients/'+userID
+		url = self.fosscord+'channels/'+channelID+'/recipients/'+userID
 		context = ContextProperties.get("add friends to dm")
 		return Wrapper.sendRequest(self.s, 'put', url, headerModifications={"update":{"X-Context-Properties":context}}, log=self.log)
 
 	def createDmGroupInvite(self, channelID, max_age_seconds):
-		url = self.discord+'channels/'+channelID+'/invites'
+		url = self.fosscord+'channels/'+channelID+'/invites'
 		if max_age_seconds == False:
 			max_age_seconds = 0
 		body = {"max_age": max_age_seconds}
@@ -69,12 +64,12 @@ class Messages(object):
 		return Wrapper.sendRequest(self.s, 'post', url, body, headerModifications={"update":{"X-Context-Properties":context}}, log=self.log)
 
 	def setDmGroupName(self, channelID, name):
-		url = self.discord+'channels/'+channelID
+		url = self.fosscord+'channels/'+channelID
 		body = {"name": name}
 		return Wrapper.sendRequest(self.s, 'patch', url, body, log=self.log)
 
 	def setDmGroupIcon(self, channelID, imagePath):
-		url = self.discord+'channels/'+channelID
+		url = self.fosscord+'channels/'+channelID
 		with open(imagePath, "rb") as image:
 			encodedImage = base64.b64encode(image.read()).decode('utf-8')
 		body = {"icon":"data:image/png;base64,"+encodedImage}
@@ -82,7 +77,7 @@ class Messages(object):
 
 	#get messages
 	def getMessages(self,channelID,num,beforeDate,aroundMessage): # num is between 1 and 100, beforeDate is a snowflake
-		url = self.discord+"channels/"+channelID+"/messages?limit="+str(num)
+		url = self.fosscord+"channels/"+channelID+"/messages?limit="+str(num)
 		if beforeDate != None:
 			url += "&before="+str(beforeDate)
 		elif aroundMessage != None:
@@ -91,12 +86,12 @@ class Messages(object):
 
 	#get message by channel ID and message ID
 	def getMessage(self, channelID, messageID):
-		url = self.discord+"channels/"+channelID+"/messages?limit=1&around="+messageID
+		url = self.fosscord+"channels/"+channelID+"/messages?limit=1&around="+messageID
 		return Wrapper.sendRequest(self.s, 'get', url, log=self.log)
 
 	#greet with stickers
 	def greet(self, channelID, sticker_ids):
-		url = self.discord+"channels/"+channelID+"/greet"
+		url = self.fosscord+"channels/"+channelID+"/greet"
 		if isinstance(sticker_ids, str):
 			sticker_ids = [sticker_ids]
 		body = {"sticker_ids": sticker_ids}
@@ -104,9 +99,9 @@ class Messages(object):
 
 	#text message
 	def sendMessage(self, channelID, message, nonce, tts, embed, message_reference, allowed_mentions, sticker_ids):
-		url = self.discord+"channels/"+channelID+"/messages"
+		url = self.fosscord+"channels/"+channelID+"/messages"
 		if nonce == "calculate":
-			body = {"content": message, "tts": tts, "nonce": self.calculateNonce()}
+			body = {"content": message, "tts": tts, "nonce": Snowflake.get_snowflake()}
 		else:
 			body = {"content": message, "tts": tts, "nonce": str(nonce)}
 		if embed != None:
@@ -136,7 +131,7 @@ class Messages(object):
 		else: #local file
 			filename = os.path.basename(os.path.normpath(filelocation))
 		#now time to post the file
-		url = self.discord+'channels/'+channelID+'/messages'
+		url = self.fosscord+'channels/'+channelID+'/messages'
 		if isurl:
 			payload = {"content":message,"tts":tts}
 			if message_reference != None:
@@ -165,14 +160,14 @@ class Messages(object):
 		else:
 			self.sendFile(channelID, file, isurl=isurl, message=message, tts=tts, message_reference={"guild_id":guildID,"channel_id":channelID,"message_id":messageID}, sticker_ids=sticker_ids)
 
-	def searchMessages(self, guildID, channelID, authorID, authorType, mentionsUserID, has, linkHostname, embedProvider, embedType, attachmentExtension, attachmentFilename, mentionsEveryone, includeNsfw, afterDate, beforeDate, textSearch, afterNumResults, limit): #classic discord search function, results with key "hit" are the results you searched for, afterNumResults (aka offset) is multiples of 25 and indicates after which messages (type int), filterResults defaults to False
+	def searchMessages(self, guildID, channelID, authorID, authorType, mentionsUserID, has, linkHostname, embedProvider, embedType, attachmentExtension, attachmentFilename, mentionsEveryone, includeNsfw, afterDate, beforeDate, textSearch, afterNumResults, limit): #classic fosscord search function, results with key "hit" are the results you searched for, afterNumResults (aka offset) is multiples of 25 and indicates after which messages (type int), filterResults defaults to False
 		if guildID:
-			url = self.discord+"guilds/"+guildID+"/messages/search?"
+			url = self.fosscord+"guilds/"+guildID+"/messages/search?"
 		else:
 			if isinstance(channelID, str):
-				url = self.discord+"channels/{}/messages/search?".format(channelID)
+				url = self.fosscord+"channels/{}/messages/search?".format(channelID)
 			else:
-				url = self.discord+"channels/{}/messages/search?".format(channelID[0])
+				url = self.fosscord+"channels/{}/messages/search?".format(channelID[0])
 		allqueryparams = []
 		if channelID:
 			if isinstance(channelID, str):
@@ -252,57 +247,57 @@ class Messages(object):
 		return filteredMessages
 
 	def typingAction(self, channelID): #sends the typing action for 10 seconds (or until you change the page)
-		url = self.discord+"channels/"+channelID+"/typing"
+		url = self.fosscord+"channels/"+channelID+"/typing"
 		return Wrapper.sendRequest(self.s, 'post', url, log=self.log)
 
 	def editMessage(self, channelID, messageID, newMessage):
-		url = self.discord+"channels/"+channelID+"/messages/"+messageID
+		url = self.fosscord+"channels/"+channelID+"/messages/"+messageID
 		body = {"content": newMessage}
 		return Wrapper.sendRequest(self.s, 'patch', url, body, log=self.log)
 
 	def deleteMessage(self, channelID, messageID):
-		url = self.discord+"channels/"+channelID+"/messages/"+messageID
+		url = self.fosscord+"channels/"+channelID+"/messages/"+messageID
 		return Wrapper.sendRequest(self.s, 'delete', url, log=self.log)
 
 	def pinMessage(self, channelID, messageID):
-		url = self.discord+"channels/"+channelID+"/pins/"+messageID
+		url = self.fosscord+"channels/"+channelID+"/pins/"+messageID
 		return Wrapper.sendRequest(self.s, 'put', url, log=self.log)
 
 	def unPinMessage(self, channelID, messageID):
-		url = self.discord+"channels/"+channelID+"/pins/"+messageID
+		url = self.fosscord+"channels/"+channelID+"/pins/"+messageID
 		return Wrapper.sendRequest(self.s, 'delete', url, log=self.log)
 
 	def getPins(self, channelID): #get pinned messages
-		url = self.discord+"channels/"+channelID+"/pins"
+		url = self.fosscord+"channels/"+channelID+"/pins"
 		return Wrapper.sendRequest(self.s, 'get', url, log=self.log)
 
 	def addReaction(self, channelID, messageID, emoji):
 		parsedEmoji = quote_plus(emoji)
-		url = self.discord+"channels/"+channelID+"/messages/"+messageID+"/reactions/"+parsedEmoji+"/%40me"
+		url = self.fosscord+"channels/"+channelID+"/messages/"+messageID+"/reactions/"+parsedEmoji+"/%40me"
 		return Wrapper.sendRequest(self.s, 'put', url, log=self.log)
 
 	def removeReaction(self, channelID, messageID, emoji):
 		parsedEmoji = quote_plus(emoji)
-		url = self.discord+"channels/"+channelID+"/messages/"+messageID+"/reactions/"+parsedEmoji+"/%40me"
+		url = self.fosscord+"channels/"+channelID+"/messages/"+messageID+"/reactions/"+parsedEmoji+"/%40me"
 		return Wrapper.sendRequest(self.s, 'delete', url, log=self.log)
 
 	#acknowledge message (mark message read)
 	def ackMessage(self, channelID, messageID, ackToken):
-		url = self.discord+"channels/"+channelID+"/messages/"+messageID+"/ack"
+		url = self.fosscord+"channels/"+channelID+"/messages/"+messageID+"/ack"
 		body = {"token": ackToken}
 		return Wrapper.sendRequest(self.s, 'post', url, body, log=self.log)
 
 	#unacknowledge message (mark message unread)
 	def unAckMessage(self, channelID, messageID, numMentions):
-		url = self.discord+"channels/"+channelID+"/messages/"+messageID+"/ack"
+		url = self.fosscord+"channels/"+channelID+"/messages/"+messageID+"/ack"
 		body = {"manual": True, "mention_count": numMentions}
 		return Wrapper.sendRequest(self.s, 'post', url, body, log=self.log)
 
 	def bulkAck(self, data):
-		url = self.discord+"read-states/ack-bulk"
+		url = self.fosscord+"read-states/ack-bulk"
 		body = {"read_states": data}
 		return Wrapper.sendRequest(self.s, 'post', url, body, log=self.log)
 
 	def getTrendingGifs(self, provider, locale, media_format):
-		url = self.discord+"gifs/trending?provider="+provider+"&locale="+locale+"&media_format="+media_format
+		url = self.fosscord+"gifs/trending?provider="+provider+"&locale="+locale+"&media_format="+media_format
 		return Wrapper.sendRequest(self.s, 'get', url, log=self.log)
