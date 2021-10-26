@@ -23,9 +23,7 @@ from ..logger import * #imports LogLevel and Logger
 from ..importmanager import Imports
 imports = Imports(
 	{
-		"User": "fossbotpy.user.user",
 		"GuildCombo": "fossbotpy.gateway.guild.combo",
-		"UserCombo": "fossbotpy.gateway.user.combo",
 	}
 )
 
@@ -58,7 +56,7 @@ class GatewayServer:
 		DISPATCH =                     0  #  Receive         dispatches an event
 		HEARTBEAT =                    1  #  Send/Receive    used for ping checking
 		IDENTIFY =                     2  #  Send            used for client handshake
-		PRESENCE_UPDATE =              3  #  Send            used to update the client status
+		#PRESENCE_UPDATE =              3  #  Send            used to update the client status *does not work yet in fosscord
 		VOICE_STATE_UPDATE =           4  #  Send            used to join/move/leave voice channels
 		VOICE_SERVER_PING =            5  #  Send            used for voice ping checking
 		RESUME =                       6  #  Send            used to resume a closed connection
@@ -70,15 +68,15 @@ class GatewayServer:
 		#GUILD_SYNC =                  12 #  Receive         supposedly guild_sync but not used...idk
 		DM_UPDATE =                    13 #  Send            used to get dm features
 		LAZY_REQUEST =                 14 #  Send            fosscord responds back with GUILD_MEMBER_LIST_UPDATE type SYNC...
-		LOBBY_CONNECT =                15 #  ??
-		LOBBY_DISCONNECT =             16 #  ??
-		LOBBY_VOICE_STATES_UPDATE =    17 #  Receive
-		STREAM_CREATE =                18 #  ??
-		STREAM_DELETE =                19 #  ??
-		STREAM_WATCH =                 20 #  ??
-		STREAM_PING =                  21 #  Send
-		STREAM_SET_PAUSED =            22 #  ??
-		REQUEST_APPLICATION_COMMANDS = 24 #  ??
+		LOBBY_CONNECT =                15 #  ?? pretty sure this doesnt work yet in fosscord
+		LOBBY_DISCONNECT =             16 #  ?? pretty sure this doesnt work yet in fosscord
+		LOBBY_VOICE_STATES_UPDATE =    17 #  Receive pretty sure this doesnt work yet in fosscord
+		STREAM_CREATE =                18 #  ?? pretty sure this doesnt work yet in fosscord
+		STREAM_DELETE =                19 #  ?? pretty sure this doesnt work yet in fosscord
+		STREAM_WATCH =                 20 #  ?? pretty sure this doesnt work yet in fosscord
+		STREAM_PING =                  21 #  Send pretty sure this doesnt work yet in fosscord
+		STREAM_SET_PAUSED =            22 #  ?? pretty sure this doesnt work yet in fosscord
+		REQUEST_APPLICATION_COMMANDS = 24 #  ?? interactions not implemented yet in fosscord
 
 	def __init__(self, websocketurl, token, super_properties, sessionobj="", RESTurl="", log={"console":True, "file":False}): #session obj needed for proxies and some combo gateway functions (that also require http api wraps)
 		self.token = token
@@ -513,60 +511,3 @@ class GatewayServer:
 			return True
 		else:
 			return command not in self._after_message_hooks
-
-	'''
-	User stuff
-	'''
-	def setStatus(self, status): #can only be run while connected to gateway
-		imports.User(self.RESTurl,self.sessionobj,self.log).setStatusHelper(status)
-		imports.UserCombo(self).setStatus(status)
-
-	#Currently does not work due to fosscord api changes :/ They seem to be cross checking inputs with connections but not sure yet...
-	def setPlayingStatus(self, game): #can only be run while connected to gateway, will update metadata later
-		if not self.session.userSettings['show_current_game']:
-			imports.User(self.RESTurl,self.sessionobj,self.log).enableActivityDisplay(enable=True)
-		imports.UserCombo(self).setPlayingStatus(game)
-
-	def removePlayingStatus(self): #can only be run while connected to gateway
-		imports.UserCombo(self).removePlayingStatus()
-
-	#Currently does not work due to fosscord api changes :/ They seem to be cross checking inputs with connections but not sure yet...
-	def setStreamingStatus(self, stream, url): #can only be run while connected to gateway, will update metadata later
-		if not self.session.userSettings['show_current_game']:
-			imports.User(self.RESTurl,self.sessionobj,self.log).enableActivityDisplay(enable=True)
-		imports.UserCombo(self).setStreamingStatus(stream, url)
-
-	def removeStreamingStatus(self): #can only be run while connected to gateway
-		imports.UserCombo(self).removeStreamingStatus()
-
-	#Currently does not work due to fosscord api changes :/ They seem to be cross checking inputs with connections but not sure yet...
-	def setListeningStatus(self, song): #can only be run while connected to gateway, will update metadata later
-		if not self.session.userSettings['show_current_game']:
-			imports.User(self.RESTurl,self.sessionobj,self.log).enableActivityDisplay(enable=True)
-		imports.UserCombo(self).setListeningStatus(song)
-
-	def removeListeningStatus(self): #can only be run while connected to gateway
-		imports.UserCombo(self).removeListeningStatus()
-
-	#Currently does not work due to fosscord api changes :/ They seem to be cross checking inputs with connections but not sure yet...
-	def setWatchingStatus(self, show): #can only be run while connected to gateway, will update metadata later
-		if not self.session.userSettings['show_current_game']:
-			imports.User(self.RESTurl,self.sessionobj,self.log).enableActivityDisplay(enable=True)
-		imports.UserCombo(self).setWatchingStatus(show)
-
-	def removeWatchingStatus(self): #can only be run while connected to gateway
-		imports.UserCombo(self).removeWatchingStatus()
-
-	def setCustomStatus(self, customstatus, emoji=None, animatedEmoji=False, expires_at=None): #can only be run while connected to gateway
-		imports.User(self.RESTurl,self.sessionobj,self.log).setStatusHelper(self.session.userSettings['status'])
-		imports.User(self.RESTurl,self.sessionobj,self.log).setCustomStatusHelper(customstatus, emoji, expires_at)
-		imports.UserCombo(self).setCustomStatus(customstatus, emoji, animatedEmoji)
-
-	def removeCustomStatus(self):
-		imports.User(self.RESTurl,self.sessionobj,self.log).setCustomStatusHelper("")
-		imports.UserCombo(self).removeCustomStatus()
-
-	def clearActivities(self):
-		if self.session.userSettings['custom_status'] != None:
-			imports.User(self.RESTurl,self.sessionobj,self.log).setCustomStatusHelper("", emoji=None, expires_at=None)
-		imports.UserCombo(self).clearActivities()

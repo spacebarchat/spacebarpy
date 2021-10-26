@@ -12,9 +12,6 @@ imports = Imports(
 		"Stickers": "fossbotpy.stickers.stickers",
 		"Science": "fossbotpy.science.science",
 		"TOTP": "fossbotpy.utils.totp",
-		"RemoteAuth": "fossbotpy.gateway.remoteauth",
-		"SlashCommands": "fossbotpy.interactions.slashcommands",
-		"Buttons": "fossbotpy.interactions.buttons"
 	}
 )
 
@@ -31,8 +28,8 @@ import random
 
 #client initialization
 class Client:
-	__slots__ = ['log', 'locale', '__user_token', '__user_email', '__user_password', '__totp_secret', '__xfingerprint', 'userData', '__proxy_host', '__proxy_port', 'api_version', 'discord', 'websocketurl', 'remoteauthurl', '__user_agent', 's', '__super_properties', 'gateway', 'Science']
-	def __init__(self, email="", password="", secret="", code="", token="", remote_auth=False, proxy_host=None, proxy_port=None, user_agent="random", locale="en-US", build_num="request", base_url="https://dev.fosscord.com/api/v9/", log={"console":True, "file":False}):
+	__slots__ = ['log', 'locale', '__user_token', '__user_email', '__user_password', '__totp_secret', '__xfingerprint', 'userData', '__proxy_host', '__proxy_port', 'api_version', 'discord', 'websocketurl', '__user_agent', 's', '__super_properties', 'gateway', 'Science']
+	def __init__(self, email="", password="", secret="", code="", token="", proxy_host=None, proxy_port=None, user_agent="random", locale="en-US", build_num="request", base_url="https://dev.fosscord.com/api/v9/", log={"console":True, "file":False}):
 		#step 1: vars
 		self.log = log
 		self.locale = locale
@@ -50,7 +47,6 @@ class Client:
 		if not base_url.endswith('/'):
 			self.discord += '/'
 		main_url = url_params[0]+'//'+url_params[1][:-4]
-		self.remoteauthurl = 'wss://remote-auth-gateway.fosscord.com/?v=1' #remote auth doesn't work anyway for fosscord so
 		#step 2: user agent
 		if user_agent != "random":
 			self.__user_agent = user_agent
@@ -91,12 +87,8 @@ class Client:
 		#step 6: token/authorization/fingerprint (also part of headers, except for fingerprint)
 		tokenProvided = self.__user_token not in ("",None,False)
 		if not tokenProvided:
-			if remote_auth:
-				self.__user_token, self.userData = self.remoteAuthLogin(remote_auth)
-			else:
-				loginResponse, self.__xfingerprint = imports.Login(self.s, self.discord, log).login(email=email, password=password, undelete=False, captcha=None, source=None, gift_code_sku_id=None, secret=secret, code=code)
-				self.__user_token = loginResponse.json().get('token') #update token from "" to actual value
-				time.sleep(1)
+			loginResponse, self.__xfingerprint = imports.Login(self.s, self.discord, log).login(email=email, password=password, undelete=False, captcha=None, source=None, gift_code_sku_id=None, secret=secret, code=code)
+			self.__user_token = loginResponse.json().get('token') #update token from "" to actual value
 		self.s.headers.update({"Authorization": self.__user_token}) #update headers
 		#step 7: gateway (object initialization)
 		from .gateway.gateway import GatewayServer
@@ -158,13 +150,6 @@ class Client:
 
 	def getVersionStableHash(self, underscore=None):
 		return imports.Other(self.s, self.discord, self.log).getVersionStableHash(underscore)
-
-	def initRA(self):
-		self.ra = imports.RemoteAuth(self.remoteauthurl, self.__user_agent, self.__proxy_host, self.__proxy_port, self.log)
-
-	def remoteAuthLogin(self, saveQrCode=True):
-		self.initRA()
-		return self.ra.run(saveQrCode)
 
 	'''
 	Messages
@@ -748,21 +733,6 @@ class Client:
 
 	def getGuildActivitiesConfig(self, guildID):
 		return imports.Guild(self.discord,self.s,self.log).getGuildActivitiesConfig(guildID)
-
-	'''
-	Interactions
-	'''
-	#used when searching for slash commands in a dm w/a bot
-	def getSlashCommands(self, applicationID):
-		return imports.SlashCommands(self.discord,self.s,self.log).getSlashCommands(applicationID)
-
-	#trigger a slash command (running /command blah blah blah whatever)
-	def triggerSlashCommand(self, applicationID, channelID, guildID=None, data={}, nonce="calculate"):
-		return imports.SlashCommands(self.discord,self.s,self.log).triggerSlashCommand(applicationID, channelID, guildID, data, nonce)
-
-	#click on a button or select menu option(s)
-	def click(self, applicationID, channelID, messageID, messageFlags, guildID=None, nonce="calculate", data={}):
-		return imports.Buttons(self.discord,self.s,self.log).click(applicationID, channelID, messageID, messageFlags, guildID, nonce, data)
 
 	'''
 	"Science", aka Discord's tracking endpoint (https://luna.gitlab.io/discord-unofficial-docs/science.html - "Discord argues that they need to collect the data in the case the User allows the usage of the data later on. Which in [luna's] opinion is complete bullshit. Have a good day.")

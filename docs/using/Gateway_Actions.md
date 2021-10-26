@@ -12,109 +12,6 @@ def readyTest(resp):
 ```
 _____________
 ### User
-##### ```gateway.setStatus```
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.setStatus("online")
-```
-###### Parameters:
-- status (str) - "online", "idle", "dnd", or "invisible"
-
-##### ```gateway.setCustomStatus```
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.setCustomStatus("Discording")
-```
-###### Parameters:
-- customstatus (str)
-- emoji (Optional[str])
-- animatedEmoji (Optional[bool]) - is the emoji animated?
-- expires_at (Optional[str]) - unix timestamp
-
-##### ```gateway.setPlayingStatus```
-__\*currently does not work__
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.setPlayingStatus("pycraft")
-```
-###### Parameters:
-- game (str)
-
-##### ```gateway.setStreamingStatus```
-__\*currently does not work__
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.setStreamingStatus("pycraft", "https://github.com/ammaraskar/pyCraft")
-```
-###### Parameters:
-- stream (str)
-- url (str)
-
-##### ```gateway.setListeningStatus```
-__\*currently does not work__
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.setListeningStatus("pycraft")
-```
-###### Parameters:
-- song (str)
-
-##### ```gateway.setWatchingStatus```
-__\*currently does not work__
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.setWatchingStatus("pycraft")
-```
-###### Parameters:
-- show (str)
-
-##### ```gateway.removePlayingStatus```
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.removePlayingStatus()
-```
-##### ```gateway.removeStreamingStatus```
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.removeStreamingStatus()
-```
-##### ```gateway.removeListeningStatus```
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.removeListeningStatus()
-```
-##### ```gateway.removeWatchingStatus```
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.removeWatchingStatus()
-```
-##### ```gateway.clearActivities```
-```python
-@bot.gateway.command
-def setStatusTest(resp):
-    if resp.event.ready:
-        bot.gateway.clearActivities()
-```
 ##### ```gateway.parse(...).sessions_replace```
 ```python
 bot.gateway.parse(savedEvent).sessions_replace("420420420")
@@ -334,31 +231,6 @@ def searchGuildMembersTest(resp):
 - user_ids (Optional[list]) - search if specified users are in guild(s)
 - nonce (Optional[str]) - current discord snowflake; user accs don't use this, but it can be helpful for an easy way to link requests to their responses
 
-##### ```gateway.request.searchSlashCommands```
-below is an example for sending slash commands to a guild. First we search for slash commands and then we send the one we want.
-```python
-from fossbotpy.utils.slash import SlashCommander
-
-@bot.gateway.command
-def slashCommandTest(resp):
-    if resp.event.ready:
-        bot.gateway.request.searchSlashCommands('guildID', limit=10, query="queue")
-    if resp.event.guild_application_commands_updated:
-        bot.gateway.removeCommand(slashCommandTest)
-        slashCmds = resp.parsed.auto()['application_commands']
-        s = SlashCommander(slashCmds, application_id='botID')
-        data = s.get(['queue'])
-        bot.triggerSlashCommand("botID", "channelID", "guildID", data=data)
-```
-###### Parameters:
-- guildID (str) - bot ID
-- nonce (Optional[str]) - current discord snowflake. Calculated by default.
-- offset (Optional[int]) - start showing results at what index. Defaults to None aka 0
-- limit (optional[int]) - up to how many results to get. Defaults to 10
-- command_ids (Optional[list]) - list of command ID strings to get data on
-- query (Optional[str]) - search for commands that start with query
-
-
 ##### ```gateway.parse(...).guild_member_list_update```
 ```python
 bot.gateway.parse(savedEvent).guild_member_list_update
@@ -409,6 +281,7 @@ bot.gateway.parse(savedEvent).message_create
 where savedEvent is a dictionary with keys ["op", "d", "s", "t"]
 _____________
 ### Media/Calling
+\* calling hasn't been implemented yet into fosscord, but these requests go thru.
 ##### ```gateway.request.call```
 ```python
 @bot.gateway.command

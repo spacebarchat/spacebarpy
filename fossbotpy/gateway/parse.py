@@ -28,9 +28,6 @@ class Parse(object):
 	def ready(self):
 		return imports.StartParse().ready(self.response)
 
-	def ready_supplemental(self):
-		return imports.StartParse().ready_supplemental(self.response)
-
 	def guild_member_list_update(self):
 		return imports.GuildParse().guild_member_list_update(self.response)
 

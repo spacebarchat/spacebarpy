@@ -4,6 +4,7 @@
 [![version](https://badge.fury.io/py/fossbotpy.svg)](https://badge.fury.io/py/fossbotpy) [![python versions](https://img.shields.io/badge/python-2.7%20%7C%203.5%20%7C%203.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-green)](https://pypi.org/project/fossbotpy)      
 A simple, easy to use, non-restrictive, synchronous fossbotpy API Wrapper for Selfbots/Userbots written in Python.       
 -using requests and websockets :) 
+-based off of the discum library
 
 ## Table of Contents
 - [Key Features](#Key-features)

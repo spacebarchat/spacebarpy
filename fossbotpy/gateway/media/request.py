@@ -1,4 +1,5 @@
 #request
+#not really implemented yet into fosscord, but these work
 
 class MediaRequest(object):
 	__slots__ = ['gatewayobj']

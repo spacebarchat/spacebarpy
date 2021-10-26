@@ -34,13 +34,6 @@ bot.gateway.log = {"console":True, "file":False}
 bot.gateway.log = {"console":False, "file":"gatewaylog.txt"}
 #etc...
 ```
-```bot.ra.log``` dict, manages logging for remote authentication gateway actions
-```python
-bot.ra.log = {"console":True, "file":False}
-#or
-bot.ra.log = {"console":False, "file":"ralog.txt"}
-#etc...
-```
 
 ### general variables
 ```python
