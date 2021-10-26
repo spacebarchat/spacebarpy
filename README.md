@@ -3,13 +3,13 @@
 
 [![version](https://badge.fury.io/py/fossbotpy.svg)](https://badge.fury.io/py/fossbotpy) [![python versions](https://img.shields.io/badge/python-2.7%20%7C%203.5%20%7C%203.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-green)](https://pypi.org/project/fossbotpy)      
 A simple, easy to use, non-restrictive, synchronous fossbotpy API Wrapper for Selfbots/Userbots written in Python.       
--using requests and websockets :) 
--based off of the discum library
+-using requests and websockets :)        
+-based off of the discum library      
 
 ## Table of Contents
 - [Key Features](#Key-features)
 - [Installation](#Installation)
-  - [Prerequisites](#prerequisites-installed-automatically-using-above-methods)
+  - [Prerequisites](#libs-used-installed-automatically-using-above-methods)
 - [Documentation](docs)
 - [Contributing](#Contributing)
 - [Example Usage](#Quick-example)
@@ -37,7 +37,8 @@ python3 -m pip install -U fossbotpy
 py -3 -m pip install -U fossbotpy
 ```
 
-#### Prerequisites (installed automatically using above methods)
+#### libs used
+installed automatically using above methods     
 - requests
 - requests_toolbelt
 - brotli
@@ -81,8 +82,8 @@ bot.gateway.run()
 [Documentation](docs)      
 [More examples](examples)      
 [Changelog](changelog.md)      
-[Source](https://gitlab.com/arandomnewaccount/fossbotpy)      
-[PyPi](https://pypi.org/project/fossbotpy/)      
+[Source](https://github.com/discordtehe/fossbotpy)      
+[PyPi](https://pypi.org/project/fossbotpy)      
 
 # Checklist
 - [x] Sending basic text messages
@@ -92,10 +93,8 @@ bot.gateway.run()
 - [X] Profile Editing (Name,Status,Avatar)
 - [X] On-Message (and other on-anything gateway) capabilities
 - [X] Getting guild members
-- [X] improve documentation
-- [X] add interactions (slash command triggering, buttons, and dropdowns/menus)
+- [ ] improve documentation
 - [ ] add more guild http api wraps
-- [ ] media (voice & video calls, along with the various discord games/activites)
 - [ ] Everything
 
 ## FAQ
