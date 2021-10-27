@@ -3,7 +3,7 @@ from .importmanager import Imports
 imports = Imports(
 	{
 		"Wrapper": "fossbotpy.RESTapiwrap",
-		"Login": "fossbotpy.start.login",
+		"Auth": "fossbotpy.start.auth",
 		"SuperProperties": "fossbotpy.start.superproperties",
 		"Other": "fossbotpy.start.other",
 		"Guild": "fossbotpy.guild.guild",
@@ -27,7 +27,7 @@ import random
 
 #client initialization
 class Client:
-	__slots__ = ['log', 'locale', '__user_token', '__user_email', '__user_password', '__xfingerprint', 'userData', '__proxy_host', '__proxy_port', 'api_version', 'fosscord', 'websocketurl', '__user_agent', 's', '__super_properties', 'gateway', 'Science']
+	__slots__ = ['log', 'locale', '__user_token', '__user_email', '__user_password', 'userData', '__proxy_host', '__proxy_port', 'api_version', 'fosscord', 'websocketurl', '__user_agent', 's', '__super_properties', 'gateway', 'Science']
 	def __init__(self, email="", password="", token="", proxy_host=None, proxy_port=None, user_agent="random", locale="en-US", build_num="request", base_url="https://dev.fosscord.com/api/v9/", log={"console":True, "file":False}):
 		#step 1: vars
 		self.log = log
@@ -35,7 +35,6 @@ class Client:
 		self.__user_token = token
 		self.__user_email = email
 		self.__user_password = password
-		self.__xfingerprint = ""
 		self.userData = {} #used if science requests are used
 		self.__proxy_host = None if proxy_host in (None,False) else proxy_host
 		self.__proxy_port = None if proxy_port in (None,False) else proxy_port
@@ -82,10 +81,10 @@ class Client:
 		#step 5: super-properties (part of headers)
 		self.__super_properties = imports.SuperProperties(self.s, buildnum=build_num, log=log).getSuperProperties(self.__user_agent, self.locale)
 		self.s.headers.update({"X-Super-Properties": base64.b64encode(json.dumps(self.__super_properties).encode()).decode("utf-8")})
-		#step 6: token/authorization/fingerprint (also part of headers, except for fingerprint)
+		#step 6: token/authorization
 		tokenProvided = self.__user_token not in ("",None,False)
 		if not tokenProvided:
-			loginResponse, self.__xfingerprint = imports.Login(self.s, self.fosscord, log).login(email=email, password=password, undelete=False, captcha=None, source=None, gift_code_sku_id=None)
+			loginResponse = imports.Login(self.s, self.fosscord, log).login(email=email, password=password, undelete=False, captcha=None, source=None, gift_code_sku_id=None)
 			self.__user_token = loginResponse.json().get('token') #update token from "" to actual value
 		self.s.headers.update({"Authorization": self.__user_token}) #update headers
 		#step 7: gateway (object initialization)
@@ -116,11 +115,11 @@ class Client:
 	'''
 	start
 	'''
-	def login(self, email, password, undelete=False, captcha=None, source=None, gift_code_sku_id=None):
-		return imports.Login(self.s, self.fosscord, self.log).login(email, password, undelete, captcha, source, gift_code_sku_id)
+	def register(self, email, password, username=None, invite=None, dob="1970-01-01", gift_code_sku_id=None, captcha=None):
+		return imports.Login(self.s, self.fosscord, self.log).register(email, password, username, invite, dob, gift_code_sku_id, captcha)
 
-	def getXFingerprint(self):
-		return imports.Login(self.s, self.fosscord, self.log).getXFingerprint()
+	def login(self, email, password, undelete=False, source=None, gift_code_sku_id=None, captcha=None):
+		return imports.Login(self.s, self.fosscord, self.log).login(email, password, undelete, captcha, source, gift_code_sku_id)
 
 	def getBuildNumber(self):
 		return imports.SuperProperties(self.s, "request", self.log).requestBuildNumber()
@@ -131,17 +130,11 @@ class Client:
 	def getGatewayUrl(self):
 		return imports.Other(self.s, self.fosscord, self.log).getGatewayUrl()
 
-	def getfosscordStatus(self):
-		return imports.Other(self.s, self.fosscord, self.log).getfosscordStatus()
-
 	def getDetectables(self):
 		return imports.Other(self.s, self.fosscord, self.log).getDetectables()
 
 	def getOauth2Tokens(self):
 		return imports.Other(self.s, self.fosscord, self.log).getOauth2Tokens()
-
-	def getVersionStableHash(self, underscore=None):
-		return imports.Other(self.s, self.fosscord, self.log).getVersionStableHash(underscore)
 
 	'''
 	Messages
@@ -691,11 +684,8 @@ class Client:
 			self.userData = response.json() #this is essentially the connection test. We need it cause we can get important data without connecting to the gateway.
 		except:
 			self.userData = {"analytics_token": None, "id": "0"} #if token invalid
-			#get xfingerprint
-			if self.__xfingerprint == "":
-				self.__xfingerprint = imports.Login(self.s, self.fosscord, self.log).getXFingerprint()
 		#initialize Science object
-		self.Science = imports.Science(self.fosscord, self.s, self.log, self.userData.get("analytics_token", ""), self.userData["id"], self.__xfingerprint)
+		self.Science = imports.Science(self.fosscord, self.s, self.log, self.userData.get("analytics_token", ""), self.userData["id"])
 
 	def science(self, events): #the real prep for science events happens down here, and only once for each client obj
 		if self.Science == "":

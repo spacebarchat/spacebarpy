@@ -18,13 +18,6 @@ bot.getSuperProperties('Opera/8.17 (Windows NT 5.1; sl-SI) Presto/2.8.215 Versio
 ###### Returns:
 [superproperties dictionary](https://luna.gitlab.io/discord-unofficial-docs/science.html#super-properties-object)
 
-##### ```getXFingerprint```
-```python
-bot.getXFingerprint()
-```
-###### Returns:
-xfingerprint string
-
 ##### ```login```
 ```python
 bot.login('email@email.com', 'password')
@@ -36,19 +29,11 @@ bot.login('email@email.com', 'password')
 - captcha (Optional[str]) - captcha key
 - source (Optional) - unknown
 - gift_code_sku_id (Optional) - unknown
-###### Returns:
-(login response object, xfingerprint string)
 
 ##### ```getGatewayUrl```
 ```python
 bot.getGatewayUrl()
 ```
-
-##### ```getDiscordStatus```
-```python
-bot.getDiscordStatus()
-```
-(status of Discord's servers)
 ##### ```getDetectables```
 ```python
 bot.getDetectables()
@@ -56,10 +41,6 @@ bot.getDetectables()
 ##### ```getOauth2Tokens```
 ```python
 bot.getOauth2Tokens()
-```
-##### ```getVersionStableHash```
-```python
-bot.getVersionStableHash()
 ```
 __________
 ### User
