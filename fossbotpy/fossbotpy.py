@@ -84,7 +84,7 @@ class Client:
 		#step 6: token/authorization
 		tokenProvided = self.__user_token not in ("",None,False)
 		if not tokenProvided:
-			loginResponse = imports.Login(self.s, self.fosscord, log).login(email=email, password=password, undelete=False, captcha=None, source=None, gift_code_sku_id=None)
+			loginResponse = imports.Auth(self.s, self.fosscord, log).login(email=email, password=password, undelete=False, captcha=None, source=None, gift_code_sku_id=None)
 			self.__user_token = loginResponse.json().get('token') #update token from "" to actual value
 		self.s.headers.update({"Authorization": self.__user_token}) #update headers
 		#step 7: gateway (object initialization)
@@ -116,10 +116,10 @@ class Client:
 	start
 	'''
 	def register(self, email, password, username=None, invite=None, dob="1970-01-01", gift_code_sku_id=None, captcha=None):
-		return imports.Login(self.s, self.fosscord, self.log).register(email, password, username, invite, dob, gift_code_sku_id, captcha)
+		return imports.Auth(self.s, self.fosscord, self.log).register(email, password, username, invite, dob, gift_code_sku_id, captcha)
 
 	def login(self, email, password, undelete=False, source=None, gift_code_sku_id=None, captcha=None):
-		return imports.Login(self.s, self.fosscord, self.log).login(email, password, undelete, captcha, source, gift_code_sku_id)
+		return imports.Auth(self.s, self.fosscord, self.log).login(email, password, undelete, captcha, source, gift_code_sku_id)
 
 	def getBuildNumber(self):
 		return imports.SuperProperties(self.s, "request", self.log).requestBuildNumber()
