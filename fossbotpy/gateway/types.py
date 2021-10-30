@@ -2,7 +2,7 @@
 #only for objects with the "type" key
 
 class Types:
-	msgTypes = {
+	msg_types = {
 		0: "default",
 		1: "recipient_added",
 		2: "recipient_removed",
@@ -27,7 +27,7 @@ class Types:
 		22: "guild_invite_reminder"
 	}
 
-	channelTypes = {
+	channel_types = {
 		0: "guild_text",
 		1: "dm",
 		2: "guild_voice",
@@ -41,7 +41,7 @@ class Types:
 		13: "guild_stage_voice"
 	}
 
-	relationshipTypes = {
+	relationship_types = {
 		1: "friend",
 		2: "blocked",
 		3: "pending_incoming",

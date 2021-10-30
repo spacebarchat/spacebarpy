@@ -6,10 +6,10 @@ import json
 
 class ContextProperties(object):
 	@staticmethod
-	def encodeData(data):
-		binaryData = json.dumps(data).encode()
-		encodedData = base64.b64encode(binaryData).decode("utf-8")
-		return encodedData
+	def encode_data(data):
+		binary_data = json.dumps(data).encode()
+		encoded_data = base64.b64encode(binary_data).decode("utf-8")
+		return encoded_data
 
 	@staticmethod
 	def get(location, guild_id=None, channel_id=None, channel_type=None):
@@ -45,7 +45,7 @@ class ContextProperties(object):
 			}
 			if loc == "join guild":
 				data["location"] = "Join Guild"
-			return ContextProperties.encodeData(data)
+			return ContextProperties.encode_data(data)
 		else:
 			data = {"location":location}
-			return ContextProperties.encodeData(data)
+			return ContextProperties.encode_data(data)

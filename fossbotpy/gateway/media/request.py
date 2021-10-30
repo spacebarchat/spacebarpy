@@ -6,13 +6,13 @@ class MediaRequest(object):
 	def __init__(self, gatewayobj):
 		self.gatewayobj = gatewayobj
 
-	def call(self, channelID, guildID=None, mute=False, deaf=False, video=False):
+	def call(self, channel_id, guild_id=None, mute=False, deaf=False, video=False):
 		self.gatewayobj.send(
 		    {
 		        "op": self.gatewayobj.OPCODE.VOICE_STATE_UPDATE,
 		        "d": {
-		            "guild_id": guildID,
-		            "channel_id": channelID,
+		            "guild_id": guild_id,
+		            "channel_id": channel_id,
 		            "self_mute": mute,
 		            "self_deaf": deaf,
 		            "self_video": video,
@@ -20,7 +20,7 @@ class MediaRequest(object):
 		    }
 		)
 
-	def endCall(self):
+	def end_call(self):
 		self.gatewayobj.send(
 		    {
 		        "op": self.gatewayobj.OPCODE.VOICE_STATE_UPDATE,

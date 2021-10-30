@@ -4,30 +4,30 @@ class UserParse(object):
 	@staticmethod
 	def sessions_replace(response, session_id):
 		importantdata = {}
-		activeCounter = {} #priority = 0
-		allCounter = {} #priority = 1
-		sessionidCounter = {} #priority = 2
+		active_counter = {} #priority = 0
+		all_counter = {} #priority = 1
+		sessionid_counter = {} #priority = 2
 		#sessions_replace is one of those undocumented events that have weird formatting. :(
 		for session in response['d']:
 			if session.get("active") == True:
-				activeCounter = session
+				active_counter = session
 				break; #no need to check anything else
 			elif session.get("session_id") == "all":
-				allCounter = session
+				all_counter = session
 			elif session.get("session_id") == session_id:
-				sessionidCounter = session
+				sessionid_counter = session
 		#now start the processing
-		if len(activeCounter) > 0:
-			importantdata["status"] = activeCounter["status"]
-			importantdata["activities"] = {i["type"]:i for i in activeCounter["activities"]}
+		if len(active_counter) > 0:
+			importantdata["status"] = active_counter["status"]
+			importantdata["activities"] = {i["type"]:i for i in active_counter["activities"]}
 			return importantdata
-		elif len(allCounter) > 0:
-			importantdata["status"] = allCounter["status"]
-			importantdata["activities"] = {j["type"]:j for j in allCounter["activities"]}
+		elif len(all_counter) > 0:
+			importantdata["status"] = all_counter["status"]
+			importantdata["activities"] = {j["type"]:j for j in all_counter["activities"]}
 			return importantdata
-		elif len(sessionidCounter) > 0:
-			importantdata["status"] = sessionidCounter["status"]
-			importantdata["activities"] = {k["type"]:k for k in sessionidCounter["activities"]}
+		elif len(sessionid_counter) > 0:
+			importantdata["status"] = sessionid_counter["status"]
+			importantdata["activities"] = {k["type"]:k for k in sessionid_counter["activities"]}
 			return importantdata
 		else:
 			return {}

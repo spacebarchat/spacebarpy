@@ -1,48 +1,48 @@
 class Embedder(object):
-    __slots__ = ['jsonEmbed']
+    __slots__ = ['json_embed']
     def __init__(self):
-        self.jsonEmbed = {"fields": []} #Create a 'fields' key otherwise we can't add anything to it, plus it doesn't effect anything if nothing is added.
+        self.json_embed = {"fields": []} #Create a 'fields' key otherwise we can't add anything to it, plus it doesn't effect anything if nothing is added.
 
     def read(self):
-        return self.jsonEmbed
+        return self.json_embed
 
     def title(self,title):
-        self.jsonEmbed.update({'title': title}) 
+        self.json_embed.update({'title': title}) 
 
     def description(self,description):
-        self.jsonEmbed.update({'description': description}) 
+        self.json_embed.update({'description': description}) 
 
     def url(self,url):
-        self.jsonEmbed.update({'url': url}) 
+        self.json_embed.update({'url': url}) 
 
     def color(self,color):
-        self.jsonEmbed.update({'color': color}) 
+        self.json_embed.update({'color': color}) 
 
-    def footer(self,text,iconURL=""):
-        self.jsonEmbed.update({'footer': {
-            'icon_url': iconURL,
+    def footer(self,text,icon_url=""):
+        self.json_embed.update({'footer': {
+            'icon_url': icon_url,
             'text': text
         }}) 
 
     def image(self,url):
-        self.jsonEmbed.update({'image': {
+        self.json_embed.update({'image': {
             'url': url,
         }})
 
     def thumbnail(self,url):
-        self.jsonEmbed.update({'thumbnail': {
+        self.json_embed.update({'thumbnail': {
             'url': url,
         }})
 
     def author(self,name,url="",icon_url=""):
-        self.jsonEmbed.update({'author': {
+        self.json_embed.update({'author': {
             'name': name,
             'url': url,
             'icon_url':icon_url
         }})
 
     def fields(self,name,value,inline=False):
-        self.jsonEmbed['fields'].append({
+        self.json_embed['fields'].append({
             'name': name,
             'value': value,
             'inline': inline

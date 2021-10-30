@@ -8,7 +8,7 @@ from .logger import * #imports LogLevel and Logger
 class Wrapper:
 	#returns formatted log string and color for REST requests
 	@staticmethod
-	def logFormatter(function, data, part):
+	def log_formatter(function, data, part):
 		# [+] (<class->function) Method -> url
 		if part == "url":
 			text = "{} -> {}".format(data[0].title(), data[1])
@@ -39,27 +39,27 @@ class Wrapper:
 
 	#header modifications, like endpoints that don't need auth, superproperties, etc; also for updating headers like xfingerprint
 	@staticmethod
-	def editedReqSession(reqsession, headerModifications):
+	def edited_req_session(reqsession, header_modifications):
 		edited = requests.Session()
 		edited.headers.update(reqsession.headers.copy())
 		edited.proxies.update(reqsession.proxies.copy())
 		edited.cookies.update(reqsession.cookies.copy())
-		if headerModifications not in ({}, None):
-			if "update" in headerModifications:
-				edited.headers.update(headerModifications["update"])
-			if "remove" in headerModifications:
-				for header in headerModifications["remove"]:
+		if header_modifications not in ({}, None):
+			if "update" in header_modifications:
+				edited.headers.update(header_modifications["update"])
+			if "remove" in header_modifications:
+				for header in header_modifications["remove"]:
 					if header in edited.headers:
 						del edited.headers[header]
 		return edited
 
 	#only for "Connection reset by peer" errors. Influenced by praw's retry code
 	@staticmethod
-	def retryLogic(reqMethod, url, data, log):
+	def retry_logic(req_method, url, data, log):
 		remaining_attempts = 3
 		while True:
 			try:
-				return reqMethod(url=url, **data)
+				return req_method(url=url, **data)
 			except requests.exceptions.ConnectionError:
 				if log:
 					Logger.log("Connection reset by peer. Retrying...", None, log)
@@ -71,12 +71,12 @@ class Wrapper:
 				break
 		return None
 
-	#reqsession, method, url, body=None, headerModifications={}, timeout=None, log={"console":True, "file":False}
+	#reqsession, method, url, body=None, header_modifications={}, timeout=None, log={"console":True, "file":False}
 	@staticmethod
-	def sendRequest(*args, **kwargs): #headerModifications = {"update":{}, "remove":[]}
-		#weird way to set vars ik, but python was doing some weird things like not updating headerModifications so...temp fix...
+	def send_request(*args, **kwargs): #header_modifications = {"update":{}, "remove":[]}
+		#weird way to set vars ik, but python was doing some weird things like not updating header_modifications so...temp fix...
 		body = kwargs.get('body', None)
-		headerModifications = kwargs.get('headerModifications', {})
+		header_modifications = kwargs.get('header_modifications', {})
 		timeout = kwargs.get('timeout', None)
 		log = kwargs.get('log', None)
 		if len(args) >= 3:
@@ -93,13 +93,13 @@ class Wrapper:
 			function_name = "({}->{})".format(str(stack[1][0].f_locals['self']).split(' ')[0], stack[1][3])
 			# 2. edit request session if needed
 			if body == None:
-				if headerModifications.get('remove', None) == None:
-					headerModifications['remove'] = ['Content-Type']
+				if header_modifications.get('remove', None) == None:
+					header_modifications['remove'] = ['Content-Type']
 				else:
-					headerModifications['remove'].append('Content-Type')
-			s = Wrapper.editedReqSession(reqsession, headerModifications)
+					header_modifications['remove'].append('Content-Type')
+			s = Wrapper.edited_req_session(reqsession, header_modifications)
 			# 3. log url
-			text, color = Wrapper.logFormatter(function_name, [method, url], part="url")
+			text, color = Wrapper.log_formatter(function_name, [method, url], part="url")
 			Logger.log(text, color, log)
 			# 4. format body and log
 			data = {} #now onto the body (if exists)
@@ -109,19 +109,19 @@ class Wrapper:
 				else:
 					data = {'data': body}
 				if log:
-					text, color = Wrapper.logFormatter(function_name, body, part="body")
+					text, color = Wrapper.log_formatter(function_name, body, part="body")
 					Logger.log(text, color, log)
 			# 5. put timeout in data if needed (when we don't want to wait for a response from fosscord)
 			if timeout != None:
 				data['timeout'] = timeout
 			# 6. the request
-			response = Wrapper.retryLogic(getattr(s, method), url, data, log)
+			response = Wrapper.retry_logic(getattr(s, method), url, data, log)
 			# 7. brotli decompression of response
 			if response and response.headers.get('Content-Encoding') == "br": #decompression; gzip/deflate is automatically handled by requests module
 				response._content = Wrapper.brdecompress(response.content, log)
 			# 8. log response
 			if response != None:
-				text, color = Wrapper.logFormatter(function_name, response.text, part="response")
+				text, color = Wrapper.log_formatter(function_name, response.text, part="response")
 				Logger.log(text, color, log)
 			# 9. return response object with decompressed content
 			return response

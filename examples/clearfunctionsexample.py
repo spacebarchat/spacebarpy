@@ -11,6 +11,6 @@ def helloworld1(resp):
 def helloworld2(resp):
     if resp.event.message:
         print('Detected a message')
-        bot.gateway.clearCommands()
+        bot.gateway.clear_commands()
 
 bot.gateway.run(auto_reconnect=True)

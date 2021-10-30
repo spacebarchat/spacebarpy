@@ -96,7 +96,7 @@ class Event:
 		return self.response.get('t') == 'GUILD_APPLICATION_COMMAND_COUNTS_UPDATE'
 
 	@property
-	def ban_added(self): #{'t': 'GUILD_BAN_ADD', 's': s, 'op': 0, 'd': {'user': {'username': username, 'public_flags': 0, 'id': id, 'discriminator': '0000', 'avatar': None}, 'guild_id': guildID}}
+	def ban_added(self): #{'t': 'GUILD_BAN_ADD', 's': s, 'op': 0, 'd': {'user': {'username': username, 'public_flags': 0, 'id': id, 'discriminator': '0000', 'avatar': None}, 'guild_id': guild_id}}
 		return self.response.get('t') == 'GUILD_BAN_ADD'
 
 	@property
@@ -140,7 +140,7 @@ class Event:
 		return self.response.get('t') == 'GUILD_MEMBER_LIST_UPDATE'
 
 	@property
-	def guild_member_updated(self): #{'t': 'GUILD_MEMBER_UPDATE', 's': s, 'op': 0, 'd': {'user': {'username': usernamd, 'public_flags': 0, 'id': id, 'discriminator': '0000', 'avatar': avatar}, 'roles': [], 'premium_since': None, 'pending': False, 'nick': None, 'joined_at': '', 'is_pending': False, 'guild_id': guildID}}
+	def guild_member_updated(self): #{'t': 'GUILD_MEMBER_UPDATE', 's': s, 'op': 0, 'd': {'user': {'username': usernamd, 'public_flags': 0, 'id': id, 'discriminator': '0000', 'avatar': avatar}, 'roles': [], 'premium_since': None, 'pending': False, 'nick': None, 'joined_at': '', 'is_pending': False, 'guild_id': guild_id}}
 		return self.response.get('t') == 'GUILD_MEMBER_UPDATE'
 
 	@property

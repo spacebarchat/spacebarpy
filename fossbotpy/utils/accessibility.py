@@ -21,14 +21,14 @@ class ACCESSIBILITY_FEATURES:
 
 class Accessibility:
 	@staticmethod
-	def calculateAccessibility(types):
-		accessibilityNum = 0
+	def calculate_accessibility(types):
+		accessibility_num = 0
 		for i in types:
 			feature = i.upper().replace(" ", "_")
 			if hasattr(ACCESSIBILITY_FEATURES, feature):
-				accessibilityNum |= getattr(ACCESSIBILITY_FEATURES, feature)
-		return accessibilityNum
+				accessibility_num |= getattr(ACCESSIBILITY_FEATURES, feature)
+		return accessibility_num
 
 	@staticmethod
-	def checkAccessibilities(accessibilityNum, check):
-		return (accessibilityNum & check) == check
+	def check_accessibilities(accessibility_num, check):
+		return (accessibility_num & check) == check

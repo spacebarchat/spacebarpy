@@ -13,20 +13,20 @@ class GuildCombo(object):
 	def __init__(self, gatewayobj):
 		self.gatewayobj = gatewayobj
 
-	#fetchMembers helper function
-	def reformat_member(self, memberdata, keep=[]): #memberdata comes in as a dict and leaves as a tuple (userID, memberdatareformatted). This is done to easily prevent duplicates in the member list when fetching.
-		allProperties = ['pending', 'deaf', 'hoisted_role', 'presence', 'joined_at', 'public_flags', 'username', 'avatar', 'discriminator', 'premium_since', 'roles', 'is_pending', 'mute', 'nick', 'bot']
+	#fetch_members helper function
+	def reformat_member(self, memberdata, keep=[]): #memberdata comes in as a dict and leaves as a tuple (user_id, memberdatareformatted). This is done to easily prevent duplicates in the member list when fetching.
+		all_properties = ['pending', 'deaf', 'hoisted_role', 'presence', 'joined_at', 'public_flags', 'username', 'avatar', 'discriminator', 'premium_since', 'roles', 'is_pending', 'mute', 'nick', 'bot']
 		if keep == None:
-			remove = allProperties
+			remove = all_properties
 		elif keep == "all":
 			remove = []
 		elif isinstance(keep, list) or isinstance(keep, tuple):
-			remove = list(set(allProperties) - set(keep))
+			remove = list(set(all_properties) - set(keep))
 		elif isinstance(keep, str):
-			remove = [i for i in allProperties if i!=keep]
+			remove = [i for i in all_properties if i!=keep]
 		memberproperties = copy.deepcopy(memberdata['member']) if 'member' in memberdata else copy.deepcopy(memberdata)
 		userdata = memberproperties.pop('user', {})
-		userID = userdata.pop('id', {})
+		user_id = userdata.pop('id', {})
 		memberproperties.update(userdata)
 		#filtering/removing
 		if 'pending' in remove and 'pending' in memberproperties:
@@ -59,51 +59,51 @@ class GuildCombo(object):
 			del memberproperties['nick']
 		if 'bot' in remove and 'bot' in memberproperties:
 			del memberproperties['bot']
-		return userID, memberproperties
+		return user_id, memberproperties
 
-	#fetchMembers helper function
-	def rangeCorrector(self, ranges): #just adds [0,99] at the beginning
+	#fetch_members helper function
+	def range_corrector(self, ranges): #just adds [0,99] at the beginning
 		if [0,99] not in ranges:
 			ranges.insert(0, [0,99])
 		return ranges
 
-	#fetchMembers helper function
-	def getIndex(self, guild_id):
-		return self.gatewayobj.memberFetchingStatus[guild_id][1]
+	#fetch_members helper function
+	def get_index(self, guild_id):
+		return self.gatewayobj.member_fetching_status[guild_id][1]
 
-	#fetchMembers helper function
-	def getRanges(self, index, multiplier, memberCount):
-		initialNum = int(index*multiplier)
-		rangesList = [[initialNum, initialNum+99]]
-		if memberCount > initialNum+99:
-			rangesList.append([initialNum+100, initialNum+199])
-		return self.rangeCorrector(rangesList)
+	#fetch_members helper function
+	def get_ranges(self, index, multiplier, member_count):
+		initial_num = int(index*multiplier)
+		ranges_list = [[initial_num, initial_num+99]]
+		if member_count > initial_num+99:
+			ranges_list.append([initial_num+100, initial_num+199])
+		return self.range_corrector(ranges_list)
 
-	#fetchMembers helper function
-	def updateCurrent(self, guild_id):
-		if not self.gatewayobj.finishedMemberFetching(guild_id): #yep still gotta check for this
-			self.gatewayobj.memberFetchingStatus[guild_id][1] = self.gatewayobj.memberFetchingStatus[guild_id][0]+1
+	#fetch_members helper function
+	def update_current(self, guild_id):
+		if not self.gatewayobj.finished_member_fetching(guild_id): #yep still gotta check for this
+			self.gatewayobj.member_fetching_status[guild_id][1] = self.gatewayobj.member_fetching_status[guild_id][0]+1
 
-	#fetchMembers helper function
-	def updatePrevious(self, guild_id):
-		if not self.gatewayobj.finishedMemberFetching(guild_id):
-			self.gatewayobj.memberFetchingStatus[guild_id][0] = self.gatewayobj.memberFetchingStatus[guild_id][1]
+	#fetch_members helper function
+	def update_previous(self, guild_id):
+		if not self.gatewayobj.finished_member_fetching(guild_id):
+			self.gatewayobj.member_fetching_status[guild_id][0] = self.gatewayobj.member_fetching_status[guild_id][1]
 
-	#todo: make channel_id optional (make a helper method to find the "optimal" channel). Also...maybe rewrite fetchMembers to simply code a bit??
-	def fetchMembers(self, resp, guild_id, channel_id, method, keep, considerUpdates, startIndex, stopIndex, reset, wait): #process is a little simpler than it looks. Keep in mind that there's no actual api endpoint to get members so this is a bit hacky. However, the method used below mimics how the official client loads the member list.
+	#todo: make channel_id optional (make a helper method to find the "optimal" channel). Also...maybe rewrite fetch_members to simply code a bit??
+	def fetch_members(self, resp, guild_id, channel_id, method, keep, consider_updates, start_index, stop_index, reset, wait): #process is a little simpler than it looks. Keep in mind that there's no actual api endpoint to get members so this is a bit hacky. However, the method used below mimics how the official client loads the member list.
 		if self.gatewayobj.READY:
-			if self.gatewayobj.memberFetchingStatus.get(guild_id) == None: #request for lazy request
-				self.gatewayobj.memberFetchingStatus[guild_id] = [startIndex, startIndex] #format is [previous index, current index]. This format is useful for the wait parameter.
-				if not self.gatewayobj.session.guild(guild_id).hasMembers or reset:
-					self.gatewayobj.session.guild(guild_id).resetMembers() #reset
-				if len(self.gatewayobj.memberFetchingStatus["first"]) == 0:
-					self.gatewayobj.memberFetchingStatus["first"] = [guild_id]
-					self.gatewayobj.request.lazyGuild(guild_id, {channel_id: [[0,99]]}, typing=True, threads=False, activities=True, members=[])
+			if self.gatewayobj.member_fetching_status.get(guild_id) == None: #request for lazy request
+				self.gatewayobj.member_fetching_status[guild_id] = [start_index, start_index] #format is [previous index, current index]. This format is useful for the wait parameter.
+				if not self.gatewayobj.session.guild(guild_id).has_members or reset:
+					self.gatewayobj.session.guild(guild_id).reset_members() #reset
+				if len(self.gatewayobj.member_fetching_status["first"]) == 0:
+					self.gatewayobj.member_fetching_status["first"] = [guild_id]
+					self.gatewayobj.request.lazy_guild(guild_id, {channel_id: [[0,99]]}, typing=True, threads=False, activities=True, members=[])
 				else:
-					self.gatewayobj.request.lazyGuild(guild_id, {channel_id: [[0,99]]}, typing=True, activities=True)
-			if self.gatewayobj.memberFetchingStatus.get(guild_id) != None and not self.gatewayobj.finishedMemberFetching(guild_id): #proceed with lazy requests
-				index = self.getIndex(guild_id) #index always has the current value
-				endFetching = False
+					self.gatewayobj.request.lazy_guild(guild_id, {channel_id: [[0,99]]}, typing=True, activities=True)
+			if self.gatewayobj.member_fetching_status.get(guild_id) != None and not self.gatewayobj.finished_member_fetching(guild_id): #proceed with lazy requests
+				index = self.get_index(guild_id) #index always has the current value
+				end_fetching = False
 				#find multiplier (this dictates the way the member list requested for)
 				if method == "overlap": multiplier = 100
 				elif method == "no overlap": multiplier = 200
@@ -112,182 +112,182 @@ class GuildCombo(object):
 					if index<len(method):
 						multiplier = method[index]
 					else:
-						endFetching = True #ends fetching right after resp parsed
-				ranges = self.getRanges(index, multiplier, self.gatewayobj.session.guild(guild_id).memberCount) if not endFetching else [[0],[0]]
+						end_fetching = True #ends fetching right after resp parsed
+				ranges = self.get_ranges(index, multiplier, self.gatewayobj.session.guild(guild_id).member_count) if not end_fetching else [[0],[0]]
 				#0th lazy request (separated from the rest because this happens "first")
-				if index == startIndex and not self.gatewayobj.session.guild(guild_id).unavailable:
-					self.updateCurrent(guild_id) #current = previous+1
+				if index == start_index and not self.gatewayobj.session.guild(guild_id).unavailable:
+					self.update_current(guild_id) #current = previous+1
 					if wait!=None: time.sleep(wait)
-					self.gatewayobj.request.lazyGuild(guild_id, {channel_id: ranges})
+					self.gatewayobj.request.lazy_guild(guild_id, {channel_id: ranges})
 				if resp.event.guild_member_list:
 					parsed = resp.parsed.guild_member_list_update()
 					if parsed['guild_id'] == guild_id and ('SYNC' in parsed['types'] or 'UPDATE' in parsed['types']):
-						endFetching = False
+						end_fetching = False
 						for ind,i in enumerate(parsed['types']):
 							if i == 'SYNC':
 								if len(parsed['updates'][ind]) == 0 and parsed['locations'][ind] in ranges[1:]: #checks if theres nothing in the SYNC data
-									endFetching = True
+									end_fetching = True
 									break
 								for item in parsed['updates'][ind]:
 									if 'member' in item:
 										member_id, member_properties = self.reformat_member(item, keep=keep)
-										self.gatewayobj.session.guild(guild_id).updateOneMember(member_id, member_properties)
-										Logger.log('[gateway] [fetchMembers] <SYNC> updated member '+member_id, None, self.gatewayobj.log)
-								if not self.gatewayobj.finishedMemberFetching(guild_id) and (index-self.gatewayobj.memberFetchingStatus[guild_id][0])==1:
+										self.gatewayobj.session.guild(guild_id).update_one_member(member_id, member_properties)
+										Logger.log('[gateway] [fetch_members] <SYNC> updated member '+member_id, None, self.gatewayobj.log)
+								if not self.gatewayobj.finished_member_fetching(guild_id) and (index-self.gatewayobj.member_fetching_status[guild_id][0])==1:
 									if wait!=None: time.sleep(wait)
-									self.updatePrevious(guild_id) #previous = current
-							elif i == 'UPDATE' and considerUpdates: #this really only becomes useful for large guilds (because fetching members can take a quite some time for those guilds)
+									self.update_previous(guild_id) #previous = current
+							elif i == 'UPDATE' and consider_updates: #this really only becomes useful for large guilds (because fetching members can take a quite some time for those guilds)
 								for key in parsed['updates'][ind]:
 									if key == 'member':
 										member_id, member_properties = self.reformat_member(parsed['updates'][ind][key], keep=keep)
-										self.gatewayobj.session.guild(guild_id).updateOneMember(member_id, member_properties)
-										Logger.log('[gateway] [fetchMembers] <UPDATE> updated member '+member_id, None, self.gatewayobj.log)
+										self.gatewayobj.session.guild(guild_id).update_one_member(member_id, member_properties)
+										Logger.log('[gateway] [fetch_members] <UPDATE> updated member '+member_id, None, self.gatewayobj.log)
 							elif i == 'INVALIDATE':
 								if parsed['locations'][ind] in ranges or parsed['member_count'] == 0:
-									endFetching = True
+									end_fetching = True
 									break
-						numFetched = len(self.gatewayobj.session.guild(guild_id).members)
-						roundedUpFetched = numFetched-(numFetched%-100) #https://stackoverflow.com/a/14092788/14776493
-						if ranges==[[0],[0]] or index>=stopIndex or roundedUpFetched>=self.gatewayobj.session.guild(guild_id).memberCount or endFetching or ranges[1][0]+100>self.gatewayobj.session.guild(guild_id).memberCount: #putting whats most likely to happen first
-							self.gatewayobj.memberFetchingStatus[guild_id] = "done"
-							self.gatewayobj.removeCommand(
+						num_fetched = len(self.gatewayobj.session.guild(guild_id).members)
+						rounded_up_fetched = num_fetched-(num_fetched%-100) #https://stackoverflow.com/a/14092788/14776493
+						if ranges==[[0],[0]] or index>=stop_index or rounded_up_fetched>=self.gatewayobj.session.guild(guild_id).member_count or end_fetching or ranges[1][0]+100>self.gatewayobj.session.guild(guild_id).member_count: #putting whats most likely to happen first
+							self.gatewayobj.member_fetching_status[guild_id] = "done"
+							self.gatewayobj.remove_command(
 							    {
-							        "function": self.fetchMembers,
+							        "function": self.fetch_members,
 							        "params": {
 							            "guild_id": guild_id,
 							            "channel_id": channel_id,
 							            "method": method,
 							            "keep": keep,
-							            "considerUpdates": considerUpdates,
-							            "startIndex": startIndex,
-							            "stopIndex": stopIndex,
+							            "consider_updates": consider_updates,
+							            "start_index": start_index,
+							            "stop_index": stop_index,
 							            "reset": reset,
 							            "wait": wait
 							        },
 							    }
 							) #it's alright if you get a "not found in _after_message_hooks" error log. That's not an error for this situation.
-						elif not self.gatewayobj.finishedMemberFetching(guild_id) and index==self.gatewayobj.memberFetchingStatus[guild_id][0]:
-							self.updateCurrent(guild_id) #current = previous + 1
-							self.gatewayobj.request.lazyGuild(guild_id, {channel_id: ranges})
+						elif not self.gatewayobj.finished_member_fetching(guild_id) and index==self.gatewayobj.member_fetching_status[guild_id][0]:
+							self.update_current(guild_id) #current = previous + 1
+							self.gatewayobj.request.lazy_guild(guild_id, {channel_id: ranges})
 
 
-	#helper method for subscribeToGuildEvents
-	def findVisibleChannels(self, guildID, types, findFirst):
-		channelIDs = []
+	#helper method for subscribe_to_guild_events
+	def find_visible_channels(self, guild_id, types, find_first):
+		channel_ids = []
 		if types == "all":
 			types = ['guild_text', 'dm', 'guild_voice', 'group_dm', 'guild_category', 'guild_news', 'guild_store', 'guild_news_thread', 'guild_public_thread', 'guild_private_thread', 'guild_stage_voice']
 		s = self.gatewayobj.session
-		channels = s.guild(guildID).channels
+		channels = s.guild(guild_id).channels
 		for channel in channels.values():
 			if channel['type'] in types:
-				permissions = Permissions.calculatePermissions(s.user['id'], guildID, s.guild(guildID).owner, s.guild(guildID).roles, s.guild(guildID).me['roles'], channel["permission_overwrites"])
-				if Permissions.checkPermissions(permissions, PERMS.VIEW_CHANNEL):
-					if findFirst:
+				permissions = Permissions.calculate_permissions(s.user['id'], guild_id, s.guild(guild_id).owner, s.guild(guild_id).roles, s.guild(guild_id).me['roles'], channel["permission_overwrites"])
+				if Permissions.check_permissions(permissions, PERMS.VIEW_CHANNEL):
+					if find_first:
 						return [channel['id']]
 					else:
-						channelIDs.append(channel['id'])
-		return channelIDs
+						channel_ids.append(channel['id'])
+		return channel_ids
 
-	def subscribeToGuildEvents(self, onlyLarge, wait):
+	def subscribe_to_guild_events(self, only_large, wait):
 		if self.gatewayobj.READY:
 			s = self.gatewayobj.session
-			guildIDs = s.guildIDs
+			guild_ids = s.guild_ids
 			first = {"channel_ranges":{}, "typing":True, "threads":True, "activities":True, "members":[], "thread_member_lists":[]}
 			rest = {"channel_ranges":{}, "typing":True, "activities":True, "threads":True}
-			for guildID in guildIDs:
-				#skip if needed (onlyLarge checking)
-				if onlyLarge and not (s.guild(guildID).unavailable or s.guild(guildID).large):
+			for guild_id in guild_ids:
+				#skip if needed (only_large checking)
+				if only_large and not (s.guild(guild_id).unavailable or s.guild(guild_id).large):
 					continue
 				#op 14 field construction
-				op14fields = {"guild_id":guildID}
-				if guildID == guildIDs[0]:
+				op14fields = {"guild_id":guild_id}
+				if guild_id == guild_ids[0]:
 					op14fields.update(first)
-					if not s.guild(guildID).unavailable:
-						findChannel = self.findVisibleChannels(guildID, types="all", findFirst=True)
-						if findChannel:
-							op14fields["channel_ranges"] = {findChannel[0]: [[0,99]]}
+					if not s.guild(guild_id).unavailable:
+						find_channel = self.find_visible_channels(guild_id, types="all", find_first=True)
+						if find_channel:
+							op14fields["channel_ranges"] = {find_channel[0]: [[0,99]]}
 				else:
 					op14fields.update(rest)
-					if not s.guild(guildID).unavailable:
-						findChannel = self.findVisibleChannels(guildID, types="all", findFirst=True)
-						if findChannel:
-							op14fields["channel_ranges"] = {findChannel[0]: [[0,99]]}
+					if not s.guild(guild_id).unavailable:
+						find_channel = self.find_visible_channels(guild_id, types="all", find_first=True)
+						if find_channel:
+							op14fields["channel_ranges"] = {find_channel[0]: [[0,99]]}
 				#sending the request
 				if wait: time.sleep(wait)
-				self.gatewayobj.memberFetchingStatus["first"].append(guildID)
-				self.gatewayobj.request.lazyGuild(**op14fields)
+				self.gatewayobj.member_fetching_status["first"].append(guild_id)
+				self.gatewayobj.request.lazy_guild(**op14fields)
 
-	#helper for searchGuildMembers
-	def handleGuildMemberSearches(self, resp, guildIDs, saveAsQuery, isQueryOverridden, userIDs, keep): #hm what happens if all userIDs are found? well good news: "not_found" value is just []
+	#helper for search_guild_members
+	def handle_guild_member_searches(self, resp, guild_ids, save_as_query, is_query_overridden, user_ids, keep): #hm what happens if all user_ids are found? well good news: "not_found" value is just []
 		if resp.event.guild_members_chunk:
 			chunk = resp.parsed.auto()
-			gID = chunk["guild_id"]
+			g_id = chunk["guild_id"]
 			match = False
-			if gID in guildIDs:
-				if userIDs and "not_found" in chunk:
+			if g_id in guild_ids:
+				if user_ids and "not_found" in chunk:
 					match = True
 					for member in chunk["members"]:
 						member_id, member_properties = self.reformat_member(member, keep=keep)
-						self.gatewayobj.guildMemberSearches[gID]["ids"].add(member_id)
-						self.gatewayobj.session.guild(gID).updateOneMember(member_id, member_properties)
-				elif not userIDs:
-					if isQueryOverridden:
+						self.gatewayobj.guild_member_searches[g_id]["ids"].add(member_id)
+						self.gatewayobj.session.guild(g_id).update_one_member(member_id, member_properties)
+				elif not user_ids:
+					if is_query_overridden:
 						match = True #no checks
 						for member in chunk["members"]:
 							member_id, member_properties = self.reformat_member(member, keep=keep)
-							self.gatewayobj.guildMemberSearches[gID]["queries"][saveAsQuery].add(member_id)
-							self.gatewayobj.session.guild(gID).updateOneMember(member_id, member_properties)
+							self.gatewayobj.guild_member_searches[g_id]["queries"][save_as_query].add(member_id)
+							self.gatewayobj.session.guild(g_id).update_one_member(member_id, member_properties)
 					else: #check results
-						if all([(re.sub(' +', ' ', k["user"]["username"].lower()).startswith(saveAsQuery) or re.sub(' +', ' ', k["nick"].lower()).startswith(saveAsQuery)) if k.get('nick') else re.sub(' +', ' ', k["user"]["username"].lower()).startswith(saveAsQuery) for k in chunk["members"]]): #search user/nick, ignore case, replace consecutive spaces with 1 space
+						if all([(re.sub(' +', ' ', k["user"]["username"].lower()).startswith(save_as_query) or re.sub(' +', ' ', k["nick"].lower()).startswith(save_as_query)) if k.get('nick') else re.sub(' +', ' ', k["user"]["username"].lower()).startswith(save_as_query) for k in chunk["members"]]): #search user/nick, ignore case, replace consecutive spaces with 1 space
 							match = True
 							for member in chunk["members"]:
 								member_id, member_properties = self.reformat_member(member, keep=keep)
-								self.gatewayobj.guildMemberSearches[gID]["queries"][saveAsQuery].add(member_id)
-								self.gatewayobj.session.guild(gID).updateOneMember(member_id, member_properties)
-				if chunk["chunk_index"] == chunk["chunk_count"]-1 and gID==guildIDs[-1]: #if at end
+								self.gatewayobj.guild_member_searches[g_id]["queries"][save_as_query].add(member_id)
+								self.gatewayobj.session.guild(g_id).update_one_member(member_id, member_properties)
+				if chunk["chunk_index"] == chunk["chunk_count"]-1 and g_id==guild_ids[-1]: #if at end
 					if match:
-						self.gatewayobj.removeCommand(
+						self.gatewayobj.remove_command(
 							{
-								"function": self.handleGuildMemberSearches,
+								"function": self.handle_guild_member_searches,
 								"params": {
-									"guildIDs": guildIDs,
-									"saveAsQuery": saveAsQuery,
-									"isQueryOverridden": isQueryOverridden,
-									"userIDs": userIDs, 
+									"guild_ids": guild_ids,
+									"save_as_query": save_as_query,
+									"is_query_overridden": is_query_overridden,
+									"user_ids": user_ids, 
 									"keep": keep
 								},
 							}
 						)
 
-	def searchGuildMembers(self, guildIDs, query, saveAsQueryOverride, limit, presences, userIDs, keep):
+	def search_guild_members(self, guild_ids, query, save_as_query_override, limit, presences, user_ids, keep):
 		if self.gatewayobj.READY:
-			saveAsQuery = query.lower() if saveAsQueryOverride==None else saveAsQueryOverride.lower()
-			#create a spot to put the data in bot.gateway.guildMemberSearches
-			if userIDs: #userID storage
-				for i in guildIDs:
-					if i not in self.gatewayobj.guildMemberSearches:
-						self.gatewayobj.guildMemberSearches[i] = {"ids":set()}
-					if "ids" not in self.gatewayobj.guildMemberSearches[i]:
-						self.gatewayobj.guildMemberSearches[i]["ids"] = set()
-			else: #query storage (saveAsQuery)
-				for k in guildIDs:
-					if k not in self.gatewayobj.guildMemberSearches:
-						self.gatewayobj.guildMemberSearches[k] = {"queries":{}}
-					if "queries" not in self.gatewayobj.guildMemberSearches[k]:
-						self.gatewayobj.guildMemberSearches[k]["queries"] = {}
-					if saveAsQuery not in self.gatewayobj.guildMemberSearches[k]["queries"]:
-						self.gatewayobj.guildMemberSearches[k]["queries"][saveAsQuery] = set()
+			save_as_query = query.lower() if save_as_query_override==None else save_as_query_override.lower()
+			#create a spot to put the data in bot.gateway.guild_member_searches
+			if user_ids: #user_id storage
+				for i in guild_ids:
+					if i not in self.gatewayobj.guild_member_searches:
+						self.gatewayobj.guild_member_searches[i] = {"ids":set()}
+					if "ids" not in self.gatewayobj.guild_member_searches[i]:
+						self.gatewayobj.guild_member_searches[i]["ids"] = set()
+			else: #query storage (save_as_query)
+				for k in guild_ids:
+					if k not in self.gatewayobj.guild_member_searches:
+						self.gatewayobj.guild_member_searches[k] = {"queries":{}}
+					if "queries" not in self.gatewayobj.guild_member_searches[k]:
+						self.gatewayobj.guild_member_searches[k]["queries"] = {}
+					if save_as_query not in self.gatewayobj.guild_member_searches[k]["queries"]:
+						self.gatewayobj.guild_member_searches[k]["queries"][save_as_query] = set()
 			self.gatewayobj.command(
 				{
-					"function": self.handleGuildMemberSearches,
+					"function": self.handle_guild_member_searches,
 					"priority": 0,
 					"params": {
-						"guildIDs": guildIDs,
-						"saveAsQuery": saveAsQuery,
-						"isQueryOverridden": saveAsQueryOverride != None,
-						"userIDs": userIDs,
+						"guild_ids": guild_ids,
+						"save_as_query": save_as_query,
+						"is_query_overridden": save_as_query_override != None,
+						"user_ids": user_ids,
 						"keep": keep,
 					},
 				}
 			)
-			self.gatewayobj.request.searchGuildMembers(guildIDs, query, limit, presences, userIDs)
+			self.gatewayobj.request.search_guild_members(guild_ids, query, limit, presences, user_ids)

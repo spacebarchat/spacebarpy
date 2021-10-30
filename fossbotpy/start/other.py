@@ -9,14 +9,14 @@ class Other:
         self.fosscord = fosscordurl
         self.log = log
 
-    def getGatewayUrl(self):
+    def get_gateway_url(self):
         url = self.fosscord + "gateway"
-        return Wrapper.sendRequest(self.s, 'get', url, log=self.log)
+        return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
-    def getDetectables(self):
+    def get_detectables(self):
         url = self.fosscord + "applications/detectable"
-        return Wrapper.sendRequest(self.s, 'get', url, log=self.log)
+        return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
-    def getOauth2Tokens(self):
+    def get_oauth2_tokens(self):
         url = self.fosscord + "oauth2/tokens"
-        return Wrapper.sendRequest(self.s, 'get', url, log=self.log)
+        return Wrapper.send_request(self.s, 'get', url, log=self.log)

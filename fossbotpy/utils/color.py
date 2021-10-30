@@ -59,12 +59,12 @@ class Color:
 
 	@staticmethod
 	def from_rgb(*args):
-		newArgs = [0,0,0]
+		new_args = [0,0,0]
 		if type(args[0]) in (list, tuple):
-			newArgs[0],newArgs[1],newArgs[2] = args[0]
+			new_args[0],new_args[1],new_args[2] = args[0]
 		else:
-			newArgs = list(args)
-		return (newArgs[0]<<16) + (newArgs[1]<<8) + newArgs[2]
+			new_args = list(args)
+		return (new_args[0]<<16) + (new_args[1]<<8) + new_args[2]
 
 	@staticmethod
 	def to_rgb(c):

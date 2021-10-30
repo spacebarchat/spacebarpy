@@ -44,19 +44,19 @@ class PERMS:
 
 class Permissions:
 	@staticmethod
-	def checkPermissions(permissions, check):
+	def check_permissions(permissions, check):
 		return (permissions & check) == check
 
 	#copied the code from https://discord.com/developers/docs/topics/permissions#permission-overwrites and played around with it
 	@staticmethod
-	def calculateBasePerms(memberID, guildID, guildOwnerID, guildRoles, memberRoles):
-		if memberID == guildOwnerID:
+	def calculate_base_perms(member_id, guild_id, guild_owner_id, guild_roles, member_roles):
+		if member_id == guild_owner_id:
 			return PERMS.ALL
 
-		permissions = int(guildRoles[guildID]["permissions"])
+		permissions = int(guild_roles[guild_id]["permissions"])
 
-		for memberRoleID in memberRoles:
-			permissions |= int(guildRoles[memberRoleID]["permissions"])
+		for member_role_id in member_roles:
+			permissions |= int(guild_roles[member_role_id]["permissions"])
 
 		if permissions & PERMS.ADMINISTRATOR == PERMS.ADMINISTRATOR:
 			return PERMS.ALL
@@ -64,38 +64,38 @@ class Permissions:
 		return permissions
 
 	@staticmethod
-	def calculateOverwrites(memberID, guildID, basePermissions, channelOverwrites, memberRoles):
+	def calculate_overwrites(member_id, guild_id, base_permissions, channel_overwrites, member_roles):
 		# ADMINISTRATOR overrides any potential permission overwrites, so there is nothing to do here.
-		if basePermissions & PERMS.ADMINISTRATOR == PERMS.ADMINISTRATOR:
+		if base_permissions & PERMS.ADMINISTRATOR == PERMS.ADMINISTRATOR:
 			return PERMS.ALL
 
-		permissions = basePermissions
-		channelEveryoneOverwrites = next((i for i in channelOverwrites if i["id"]==guildID), False) #https://stackoverflow.com/a/8653568/14776493
-		if channelEveryoneOverwrites:
-			permissions &= ~int(channelEveryoneOverwrites["deny"])
-			permissions |= int(channelEveryoneOverwrites["allow"])
+		permissions = base_permissions
+		channel_everyone_overwrites = next((i for i in channel_overwrites if i["id"]==guild_id), False) #https://stackoverflow.com/a/8653568/14776493
+		if channel_everyone_overwrites:
+			permissions &= ~int(channel_everyone_overwrites["deny"])
+			permissions |= int(channel_everyone_overwrites["allow"])
 
 		# Apply role specific overwrites.
 		allow = 0
 		deny = 0
-		for memberRoleID in memberRoles: #for the pertinent roles
-			overwriteRole = next((i for i in channelOverwrites if i["id"]==memberRoleID), False) #get the corresponding channel overrides
-			if overwriteRole:
-				allow |= int(overwriteRole["allow"])
-				deny |= int(overwriteRole["deny"])
+		for member_role_id in member_roles: #for the pertinent roles
+			overwrite_role = next((i for i in channel_overwrites if i["id"]==member_role_id), False) #get the corresponding channel overrides
+			if overwrite_role:
+				allow |= int(overwrite_role["allow"])
+				deny |= int(overwrite_role["deny"])
 
 		permissions &= ~deny
 		permissions |= allow
 
 		# Apply member specific overwrite if it exist.
-		overwriteMember = next((i for i in channelOverwrites if i["id"]==memberID), False)
-		if overwriteMember:
-			permissions &= ~int(overwriteMember["deny"])
-			permissions |= int(overwriteMember["allow"])
+		overwrite_member = next((i for i in channel_overwrites if i["id"]==member_id), False)
+		if overwrite_member:
+			permissions &= ~int(overwrite_member["deny"])
+			permissions |= int(overwrite_member["allow"])
 
 		return permissions
 
 	@staticmethod
-	def calculatePermissions(memberID, guildID, guildOwnerID, guildRoles, memberRoles, channelOverwrites): #guildRoles (dictionary), memberRoles(list of strings), channelOverwrites (list of dictionaries)
-		basePermissions = Permissions.calculateBasePerms(memberID, guildID, guildOwnerID, guildRoles, memberRoles)
-		return Permissions.calculateOverwrites(memberID, guildID, basePermissions, channelOverwrites, memberRoles)
+	def calculate_permissions(member_id, guild_id, guild_owner_id, guild_roles, member_roles, channel_overwrites): #guild_roles (dictionary), member_roles(list of strings), channel_overwrites (list of dictionaries)
+		base_permissions = Permissions.calculate_base_perms(member_id, guild_id, guild_owner_id, guild_roles, member_roles)
+		return Permissions.calculate_overwrites(member_id, guild_id, base_permissions, channel_overwrites, member_roles)

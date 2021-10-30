@@ -5,7 +5,7 @@ class GuildRequest(object):
 	def __init__(self, gatewayobj):
 		self.gatewayobj = gatewayobj
 
-	def lazyGuild(self, guild_id, channel_ranges, typing, threads, activities, members, thread_member_lists): #https://arandomnewaccount.gitlab.io/discord-unofficial-docs/lazy_guilds.html
+	def lazy_guild(self, guild_id, channel_ranges, typing, threads, activities, members, thread_member_lists): #https://arandomnewaccount.gitlab.io/discord-unofficial-docs/lazy_guilds.html
 		data = {
 		    "op": self.gatewayobj.OPCODE.LAZY_REQUEST,
 		    "d": {
@@ -32,7 +32,7 @@ class GuildRequest(object):
 			data["d"].pop("thread_member_lists")
 		self.gatewayobj.send(data)
 
-	def searchGuildMembers(self, guild_ids, query, limit, presences, user_ids, nonce): #note that query can only be "" if you have admin perms (otherwise you'll get inconsistent responses from fosscord)
+	def search_guild_members(self, guild_ids, query, limit, presences, user_ids, nonce): #note that query can only be "" if you have admin perms (otherwise you'll get inconsistent responses from fosscord)
 		if isinstance(guild_ids, str):
 			guild_ids = [guild_ids]
 		data = {

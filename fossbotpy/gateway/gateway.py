@@ -40,7 +40,7 @@ class ConnectionResumableException(Exception): #for certain close codes. "except
 class ConnectionManuallyClosedException(Exception):
 	pass
 
-def exceptionChecker(e, types): #this is an A or B or ... check
+def exception_checker(e, types): #this is an A or B or ... check
 	for i in types:
 		if isinstance(e,i):
 			return True
@@ -49,7 +49,7 @@ def exceptionChecker(e, types): #this is an A or B or ... check
 #gateway class
 class GatewayServer:
 
-	__slots__ = ['token', 'super_properties', 'auth', 'RESTurl', 'sessionobj', 'proxy_host', 'proxy_port', 'keepData', 'log', 'interval', 'session_id', 'sequence', 'READY', 'session', 'zlib_streamed', 'ws', '_after_message_hooks', '_last_err', '_last_close_event', 'connected', 'resumable', 'voice_data', 'memberFetchingStatus', 'resetMembersOnSessionReconnect', 'updateSessionData', 'guildMemberSearches', '_last_ack', 'latency', 'request', 'parse', '_zlib', 'connectionKwargs']
+	__slots__ = ['token', 'super_properties', 'auth', 'RESTurl', 'sessionobj', 'proxy_host', 'proxy_port', 'keep_data', 'log', 'interval', 'session_id', 'sequence', 'READY', 'session', 'zlib_streamed', 'ws', '_after_message_hooks', '_last_err', '_last_close_event', 'connected', 'resumable', 'voice_data', 'member_fetching_status', 'reset_members_on_session_reconnect', 'update_session_data', 'guild_member_searches', '_last_ack', 'latency', 'request', 'parse', '_zlib', 'connection_kwargs']
 
 	class OPCODE:
 		# Name                         Code  Client Action   Description
@@ -105,7 +105,7 @@ class GatewayServer:
 		self.proxy_host = None if "https" not in sessionobj.proxies else sessionobj.proxies["https"][8:].split(":")[0]
 		self.proxy_port = None if "https" not in sessionobj.proxies else sessionobj.proxies["https"][8:].split(":")[1]
 
-		self.keepData = ("dms", "guilds", "guild_channels") #keep data even after leaving dm, guild, or guild channel
+		self.keep_data = ("dms", "guilds", "guild_channels") #keep data even after leaving dm, guild, or guild channel
 		self.log = log
 
 		self.interval = None
@@ -127,10 +127,10 @@ class GatewayServer:
 
 		self.voice_data = {} #voice connections dependent on current (connected) session
 
-		self.memberFetchingStatus = {"first": []}
-		self.resetMembersOnSessionReconnect = True #reset members after each session
-		self.updateSessionData = True
-		self.guildMemberSearches = {}
+		self.member_fetching_status = {"first": []}
+		self.reset_members_on_session_reconnect = True #reset members after each session
+		self.update_session_data = True
+		self.guild_member_searches = {}
 
 		#latency
 		self._last_ack = None
@@ -141,7 +141,7 @@ class GatewayServer:
 		self.parse = Parse
 
 		#extra gateway connection kwargs
-		self.connectionKwargs = {}
+		self.connection_kwargs = {}
 
 	#WebSocketApp, more info here: https://github.com/websocket-client/websocket-client/blob/master/websocket/_app.py#L84
 	def _get_ws_app(self, websocketurl):
@@ -174,13 +174,13 @@ class GatewayServer:
 
 	def on_open(self, ws):
 		self.connected = True
-		self.memberFetchingStatus = {"first": []}
+		self.member_fetching_status = {"first": []}
 		Logger.log("[gateway] Connected to websocket.", None, self.log)
 		if not self.resumable:
 			#send presences if 1 or more activites in previous session. Whether or not you're invisible doesn't matter apparently.
 			if len(self.session.settings_ready) != 0:
-				if self.session.userSettings.get("activities") not in (None, {}):
-					self.auth["presence"]["status"] = self.session.userSettings.get("status")
+				if self.session.user_settings.get("activities") not in (None, {}):
+					self.auth["presence"]["status"] = self.session.user_settings.get("status")
 					self.auth["presence"]["activities"] = imports.UserCombo(self).constructActivitiesList()
 			self.send({"op": self.OPCODE.IDENTIFY, "d": self.auth})
 		else:
@@ -229,13 +229,13 @@ class GatewayServer:
 			self._last_err = None
 			self.session_id = response['d']['session_id']
 			settings_ready = resp.parsed.ready() #parsed
-			if not self.resetMembersOnSessionReconnect and self.session.read():
-				for guildID in settings_ready['guilds']:
-					settings_ready['guilds'][guildID]['members'] = self.session.guild(guildID).members
-			self.session.setSettingsReady(settings_ready)
+			if not self.reset_members_on_session_reconnect and self.session.read():
+				for guild_id in settings_ready['guilds']:
+					settings_ready['guilds'][guild_id]['members'] = self.session.guild(guild_id).members
+			self.session.set_settings_ready(settings_ready)
 			self.READY = True			
-		if self.updateSessionData:
-			self.sessionUpdates(resp)
+		if self.update_session_data:
+			self.session_updates(resp)
 		thread.start_new_thread(self._response_loop, (resp,))
 
 	def on_error(self, ws, error):
@@ -277,7 +277,7 @@ class GatewayServer:
 	def close(self):
 		self.connected = False
 		self.READY = False #reset self.READY
-		if not exceptionChecker(self._last_err, [InvalidSessionException, NeedToReconnectException]):
+		if not exception_checker(self._last_err, [InvalidSessionException, NeedToReconnectException]):
 			self._last_err = ConnectionManuallyClosedException("Disconnection initiated by client using close function.")
 		Logger.log('[gateway] websocket closed', None, self.log) #don't worry if this message prints twice
 		self.ws.close()
@@ -303,29 +303,29 @@ class GatewayServer:
 				function(resp, **params)
 		return
 
-	def removeCommand(self, func, exactMatch=True, allMatches=False):
+	def remove_command(self, func, exact_match=True, all_matches=False):
 		try:
-			if exactMatch:
+			if exact_match:
 				self._after_message_hooks.index(func) #for raising the value error
-				if allMatches:
+				if all_matches:
 					self._after_message_hooks = [i for i in self._after_message_hooks if i!=func]
 				else: #simply remove first found
 					del self._after_message_hooks[self._after_message_hooks.index(func)]
 			else:
-				commandsCopy = [i if callable(i) else i['function'] for i in self._after_message_hooks] #list of just functions
-				commandsCopy.index(func) #for raising the value error
-				if allMatches:
-					self._after_message_hooks = [i for (i,j) in zip(self._after_message_hooks, commandsCopy) if j!=func]
+				commands_copy = [i if callable(i) else i['function'] for i in self._after_message_hooks] #list of just functions
+				commands_copy.index(func) #for raising the value error
+				if all_matches:
+					self._after_message_hooks = [i for (i,j) in zip(self._after_message_hooks, commands_copy) if j!=func]
 				else:
-					del self._after_message_hooks[commandsCopy.index(func)]
+					del self._after_message_hooks[commands_copy.index(func)]
 		except ValueError:
 			Logger.log('{} not found in _after_message_hooks.'.format(func), None, self.log)
 			pass
 
-	def clearCommands(self):
+	def clear_commands(self):
 		self._after_message_hooks = []
 
-	def resetSession(self): #just resets some variables that in-turn, resets the session (client side). Do not run this while running run().
+	def reset_session(self): #just resets some variables that in-turn, resets the session (client side). Do not run this while running run().
 		self.interval = None
 		self.session_id = None
 		self.sequence = 0
@@ -334,8 +334,8 @@ class GatewayServer:
 		self.voice_data = {}
 		self.resumable = False #you can't resume anyways without session_id and sequence
 		self._last_ack = None
-		if self.resetMembersOnSessionReconnect:
-			self.memberFetchingStatus = {"first": []}
+		if self.reset_members_on_session_reconnect:
+			self.member_fetching_status = {"first": []}
 
 	#kinda influenced by https://github.com/scrubjay55/Reddit_ChatBot_Python (Apache License 2.0)
 	def run(self, auto_reconnect=True):
@@ -343,7 +343,7 @@ class GatewayServer:
 			while True:
 				try:
 					self._zlib = zlib.decompressobj()
-					self.ws.run_forever(ping_interval=10, ping_timeout=5, http_proxy_host=self.proxy_host, http_proxy_port=self.proxy_port, **self.connectionKwargs)
+					self.ws.run_forever(ping_interval=10, ping_timeout=5, http_proxy_host=self.proxy_host, http_proxy_port=self.proxy_port, **self.connection_kwargs)
 					raise self._last_err
 				except KeyboardInterrupt:
 					self._last_err = KeyboardInterrupt("Keyboard Interrupt Error")
@@ -351,110 +351,110 @@ class GatewayServer:
 					break
 				except Exception as e:
 					if auto_reconnect:
-						if not exceptionChecker(e, [KeyboardInterrupt]):
-							if exceptionChecker(e, [ConnectionResumableException]):
+						if not exception_checker(e, [KeyboardInterrupt]):
+							if exception_checker(e, [ConnectionResumableException]):
 								self._last_err = None
-								waitTime = random.randrange(1,6)
-								Logger.log("[gateway] Connection Dropped. Attempting to resume last valid session in {} seconds.".format(waitTime), None, self.log)
-								time.sleep(waitTime)
-							elif exceptionChecker(e, [ConnectionManuallyClosedException]):
+								wait_time = random.randrange(1,6)
+								Logger.log("[gateway] Connection Dropped. Attempting to resume last valid session in {} seconds.".format(wait_time), None, self.log)
+								time.sleep(wait_time)
+							elif exception_checker(e, [ConnectionManuallyClosedException]):
 								Logger.log("[gateway] Connection forcibly closed using close function.", None, self.log)
 								break
 							else:
-								self.resetSession()
+								self.reset_session()
 								Logger.log("[gateway] Connection Dropped. Retrying in 10 seconds.", None, self.log)
 								time.sleep(10)
 		else:
 			self._zlib = zlib.decompressobj()
-			self.ws.run_forever(ping_interval=10, ping_timeout=5, http_proxy_host=self.proxy_host, http_proxy_port=self.proxy_port, **self.connectionKwargs)
+			self.ws.run_forever(ping_interval=10, ping_timeout=5, http_proxy_host=self.proxy_host, http_proxy_port=self.proxy_port, **self.connection_kwargs)
 
 	######################################################
-	def sessionUpdates(self, resp):
+	def session_updates(self, resp):
 		#***guilds
 		#guild created
 		if resp.event.guild:
-			guildData = resp.parsed.guild_create(my_user_id=self.session.user['id']) #user id needed for updating personal roles in that guild
-			guildID = guildData['id']
-			voiceStateData = guildData.pop('voice_states', [])
-			if not self.resetMembersOnSessionReconnect and guildID in self.session.guildIDs:
-				guilddata['members'] = self.session.guild(guildID).members
-			self.session.setGuildData(guildID, guildData)
-			self.session.setVoiceStateData(guildID, voiceStateData)
+			guild_data = resp.parsed.guild_create(my_user_id=self.session.user['id']) #user id needed for updating personal roles in that guild
+			guild_id = guild_data['id']
+			voice_state_data = guild_data.pop('voice_states', [])
+			if not self.reset_members_on_session_reconnect and guild_id in self.session.guild_ids:
+				guilddata['members'] = self.session.guild(guild_id).members
+			self.session.set_guild_data(guild_id, guild_data)
+			self.session.set_voice_state_data(guild_id, voice_state_data)
 		#guild deleted
 		elif resp.event.guild_deleted:
-			if "guilds" in self.keepData:
-				self.session.guild(resp.raw['d']['id']).updateData({"removed": True})  #add the indicator
+			if "guilds" in self.keep_data:
+				self.session.guild(resp.raw['d']['id']).update_data({"removed": True})  #add the indicator
 			else:
-				self.session.removeGuildData(resp.raw['d']['id'])
+				self.session.remove_guild_data(resp.raw['d']['id'])
 
 		#***channels (dms and guilds)
 		#channel created (either dm or guild channel)
 		elif resp.event.channel:
-			channelData = resp.parsed.channel_create()
-			channelID = channelData['id']
-			if channelData["type"] in ("dm", "group_dm"): #dm
-				self.session.setDmData(channelID, channelData)
+			channel_data = resp.parsed.channel_create()
+			channel_id = channel_data['id']
+			if channel_data["type"] in ("dm", "group_dm"): #dm
+				self.session.set_dm_data(channel_id, channel_data)
 			else: #other channels
-				guildID = channelData.pop("guild_id")
-				self.session.guild(guildID).setChannelData(channelID, channelData)
+				guild_id = channel_data.pop("guild_id")
+				self.session.guild(guild_id).set_channel_data(channel_id, channel_data)
 		#channel deleted (either dm or guild channel)
 		elif resp.event.channel_deleted:
-			channelData = resp.parsed.channel_delete() #updated data :) ...unlike guild_delete events
-			channelData["removed"] = True #add the indicator
-			channelID = channelData["id"]
-			if channelData["type"] in ("dm", "group_dm"): #dm
-				if "dms" in self.keepData:
-					self.session.DM(channelID).updateData(channelData)
+			channel_data = resp.parsed.channel_delete() #updated data :) ...unlike guild_delete events
+			channel_data["removed"] = True #add the indicator
+			channel_id = channel_data["id"]
+			if channel_data["type"] in ("dm", "group_dm"): #dm
+				if "dms" in self.keep_data:
+					self.session.DM(channel_id).update_data(channel_data)
 				else:
-					self.session.removeDmData(channelID)
+					self.session.remove_dm_data(channel_id)
 			else: #other channels (guild channels)
-				guildID = channelData.pop("guild_id")
-				if "guild_channels" in self.keepData:
-					self.session.guild(guildID).updateChannelData(channelID, channelData)
+				guild_id = channel_data.pop("guild_id")
+				if "guild_channels" in self.keep_data:
+					self.session.guild(guild_id).update_channel_data(channel_id, channel_data)
 				else:
-					self.session.guild(guildID).removeChannelData(channelID)
+					self.session.guild(guild_id).remove_channel_data(channel_id)
 
 		#***user updates
 		#user settings updated
 		elif resp.event.settings_updated:
-			self.session.updateUserSettings(resp.raw['d'])
+			self.session.update_user_settings(resp.raw['d'])
 		#user session replaced (useful for syncing activities btwn client and server)
 		elif resp.event.session_replaced:
-			newStatus = resp.parsed.sessions_replace(session_id=self.session_id) #contains both status and activities
-			self.session.updateUserSettings(newStatus)
+			new_status = resp.parsed.sessions_replace(session_id=self.session_id) #contains both status and activities
+			self.session.update_user_settings(new_status)
 	######################################################
 
 	'''
 	Guild/Server stuff
 	'''
 	#op14 related stuff
-	def getMemberFetchingParams(self, targetRangeStarts): #more for just proof of concept. targetRangeStarts must not contain duplicates and must be a list of integers
-		targetRangeStarts = {i:1 for i in targetRangeStarts} #remove duplicates but preserve order
-		if targetRangeStarts.get(0)!=None and targetRangeStarts.get(100)!=None:
-			keys = list(targetRangeStarts)
+	def get_member_fetching_params(self, target_range_starts): #more for just proof of concept. target_range_starts must not contain duplicates and must be a list of integers
+		target_range_starts = {i:1 for i in target_range_starts} #remove duplicates but preserve order
+		if target_range_starts.get(0)!=None and target_range_starts.get(100)!=None:
+			keys = list(target_range_starts)
 			if keys.index(100)<keys.index(0):
-				targetRangeStarts.pop(0) #needs to be removed or else fetchMembers will enter an infinite loop because of how fosscord responds to member list requests
-		startIndex = 1 #can't start at 0 because can't divide by 0. No need to specify a stop index since fetchMembers continues until end of multipliers
-		method = [0] #because startIndex is 1
-		for index,i in enumerate(targetRangeStarts):
+				target_range_starts.pop(0) #needs to be removed or else fetch_members will enter an infinite loop because of how fosscord responds to member list requests
+		start_index = 1 #can't start at 0 because can't divide by 0. No need to specify a stop index since fetch_members continues until end of multipliers
+		method = [0] #because start_index is 1
+		for index,i in enumerate(target_range_starts):
 			method.append(i/(index+1))
-		return startIndex, method #return startIndex and multipliers
+		return start_index, method #return start_index and multipliers
 
-	def fetchMembers(self, guild_id, channel_id, method="overlap", keep=[], considerUpdates=True, startIndex=0, stopIndex=1000000000, reset=True, wait=None, priority=0):
-		if guild_id in self.memberFetchingStatus and resetMembersOnSessionReconnect:
-			del self.memberFetchingStatus[guild_id] #just resetting tracker on the specific guild_id
+	def fetch_members(self, guild_id, channel_id, method="overlap", keep=[], consider_updates=True, start_index=0, stop_index=1000000000, reset=True, wait=None, priority=0):
+		if guild_id in self.member_fetching_status and reset_members_on_session_reconnect:
+			del self.member_fetching_status[guild_id] #just resetting tracker on the specific guild_id
 		self.command(
 			{
-				"function": imports.GuildCombo(self).fetchMembers,
+				"function": imports.GuildCombo(self).fetch_members,
 				"priority": priority,
 				"params": {
 					"guild_id": guild_id,
 					"channel_id": channel_id,
 					"method": method,
 					"keep": keep,
-					"considerUpdates": considerUpdates,
-					"startIndex": startIndex,
-					"stopIndex": stopIndex,
+					"consider_updates": consider_updates,
+					"start_index": start_index,
+					"stop_index": stop_index,
 					"reset": reset,
 					"wait": wait
 				},
@@ -462,40 +462,40 @@ class GatewayServer:
 		)
 
 
-	def finishedMemberFetching(self, guild_id):
-		return self.memberFetchingStatus.get(guild_id) == "done"
+	def finished_member_fetching(self, guild_id):
+		return self.member_fetching_status.get(guild_id) == "done"
 
-	def findVisibleChannels(self, guildID, types=['guild_text', 'dm', 'guild_voice', 'group_dm', 'guild_category', 'guild_news', 'guild_store', 'guild_news_thread', 'guild_public_thread', 'guild_private_thread', 'guild_stage_voice'], findFirst=False):
+	def find_visible_channels(self, guild_id, types=['guild_text', 'dm', 'guild_voice', 'group_dm', 'guild_category', 'guild_news', 'guild_store', 'guild_news_thread', 'guild_public_thread', 'guild_private_thread', 'guild_stage_voice'], find_first=False):
 		if len(self.session.read()[0]) == 0: #if never connected to gateway
 			return
-		return imports.GuildCombo(self).findVisibleChannels(guildID, types, findFirst)
+		return imports.GuildCombo(self).find_visible_channels(guild_id, types, find_first)
 
 	#sends a series of opcode 14s to tell fosscord that you're looking at guild channels
-	def subscribeToGuildEvents(self, onlyLarge=False, wait=None):
-		imports.GuildCombo(self).subscribeToGuildEvents(onlyLarge, wait)
+	def subscribe_to_guild_events(self, only_large=False, wait=None):
+		imports.GuildCombo(self).subscribe_to_guild_events(only_large, wait)
 
 	#op8 related stuff
-	def queryGuildMembers(self, guildIDs, query, saveAsQueryOverride=None, limit=10, presences=True, keep=[]):
-		if isinstance(guildIDs, str):
-			guildIDs = [guildIDs]
-		imports.GuildCombo(self).searchGuildMembers(guildIDs, query, saveAsQueryOverride, limit, presences, None, keep)
+	def query_guild_members(self, guild_ids, query, save_as_query_override=None, limit=10, presences=True, keep=[]):
+		if isinstance(guild_ids, str):
+			guild_ids = [guild_ids]
+		imports.GuildCombo(self).search_guild_members(guild_ids, query, save_as_query_override, limit, presences, None, keep)
 
-	def checkGuildMembers(self, guildIDs, userIDs, presences=True, keep=[]):
-		if isinstance(guildIDs, str):
-			guildIDs = [guildIDs]
-		imports.GuildCombo(self).searchGuildMembers(guildIDs, "", None, 10, presences, userIDs, keep)
+	def check_guild_members(self, guild_ids, user_ids, presences=True, keep=[]):
+		if isinstance(guild_ids, str):
+			guild_ids = [guild_ids]
+		imports.GuildCombo(self).search_guild_members(guild_ids, "", None, 10, presences, user_ids, keep)
 
-	def finishedGuildSearch(self, guildIDs, query="", saveAsQueryOverride=None, userIDs=None, keep=False):
-		if isinstance(guildIDs, str):
-			guildIDs = [guildIDs]
-		saveAsQuery = query.lower() if saveAsQueryOverride==None else saveAsQueryOverride.lower()
+	def finished_guild_search(self, guild_ids, query="", save_as_query_override=None, user_ids=None, keep=False):
+		if isinstance(guild_ids, str):
+			guild_ids = [guild_ids]
+		save_as_query = query.lower() if save_as_query_override==None else save_as_query_override.lower()
 		command = {
-			"function": imports.GuildCombo(self).handleGuildMemberSearches,
+			"function": imports.GuildCombo(self).handle_guild_member_searches,
 			"params": {
-				"guildIDs": guildIDs,
-				"saveAsQuery": saveAsQuery,
-				"isQueryOverridden": saveAsQueryOverride != None,
-				"userIDs": userIDs,
+				"guild_ids": guild_ids,
+				"save_as_query": save_as_query,
+				"is_query_overridden": save_as_query_override != None,
+				"user_ids": user_ids,
 				"keep": keep
 			},
 		}
@@ -503,7 +503,7 @@ class GatewayServer:
 			command["params"].pop("keep")
 			for c in self._after_message_hooks:
 				if isinstance(c, dict):
-					if c.get("function").__func__ == imports.GuildCombo(self).handleGuildMemberSearches.__func__:
+					if c.get("function").__func__ == imports.GuildCombo(self).handle_guild_member_searches.__func__:
 						d1 = command["params"]
 						d2 = c.get("params", {})
 						if all(key in d2 and d2[key] == d1[key] for key in d1): #https://stackoverflow.com/a/41579450/14776493
