@@ -59,7 +59,7 @@ token = 'token'
 base_url = 'https://dev.fosscord.com/api/v9/'
 bot = fossbotpy.Client(token=token, base_url=base_url, log={"console":True, "file":False})
 
-bot.sendMessage("238323948859439", "Hello :)")
+bot.send_message("238323948859439", "Hello :)")
 
 @bot.gateway.command
 def helloworld(resp):
@@ -68,12 +68,12 @@ def helloworld(resp):
         print("Logged in as {}#{}".format(user['username'], user['discriminator']))
     if resp.event.message:
         m = resp.parsed.auto()
-        guildID = m.get('guild_id') #dms do not have a guild_id
-        channelID = m['channel_id']
+        guild_id = m.get('guild_id') #dms do not have a guild_id
+        channel_id = m['channel_id']
         username = m['author']['username']
         discriminator = m['author']['discriminator']
         content = m['content']
-        print("> guild {} channel {} | {}#{}: {}".format(guildID, channelID, username, discriminator, content))
+        print("> guild {} channel {} | {}#{}: {}".format(guild_id, channel_id, username, discriminator, content))
 
 bot.gateway.run()
 ```
@@ -93,8 +93,8 @@ bot.gateway.run()
 - [X] Profile Editing (Name,Status,Avatar)
 - [X] On-Message (and other on-anything gateway) capabilities
 - [X] Getting guild members
-- [ ] improve documentation
-- [ ] add more guild http api wraps
+- [X] camelCase -> snake_case
+- [ ] add the rest of the api wraps
 - [ ] Everything
 
 ## FAQ
