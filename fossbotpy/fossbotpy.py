@@ -2,7 +2,7 @@
 from .importmanager import Imports
 imports = Imports(
 	{
-		"Wrapper": "fossbotpy.RESTapiwrap",
+		"Wrapper": "fossbotpy.requestsender",
 		"Auth": "fossbotpy.start.auth",
 		"SuperProperties": "fossbotpy.start.superproperties",
 		"Other": "fossbotpy.start.other",

@@ -1,4 +1,4 @@
-from ..RESTapiwrap import *
+from ..requestsender import Wrapper
 from ..utils.contextproperties import ContextProperties
 import time
 

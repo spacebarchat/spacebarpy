@@ -8,7 +8,7 @@ import base64
 from ..utils.fileparse import Fileparse
 from ..utils.contextproperties import ContextProperties
 from ..utils.snowflake import Snowflake
-from ..RESTapiwrap import *
+from ..requestsender import Wrapper
 
 try:
 	from urllib.parse import quote_plus, urlparse, urlencode

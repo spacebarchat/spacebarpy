@@ -1,4 +1,4 @@
-from ..RESTapiwrap import *
+from ..requestsender import Wrapper
 
 class Stickers(object):
 	__slots__ = ['fosscord', 's', 'log']

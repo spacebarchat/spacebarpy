@@ -1,4 +1,4 @@
-from ..RESTapiwrap import *
+from ..requestsender import Wrapper
 import time, datetime
 import random
 

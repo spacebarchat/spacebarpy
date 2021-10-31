@@ -3,7 +3,7 @@
 import ua_parser.user_agent_parser
 import re
 
-from ..RESTapiwrap import *
+from ..requestsender import Wrapper
 from ..logger import Logger
 
 class SuperProperties:

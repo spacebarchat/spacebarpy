@@ -1,8 +1,8 @@
 import filetype
 
-from ..RESTapiwrap import *
+from ..requestsender import Wrapper
 
-from ..logger import * #imports LogLevel and Logger
+from ..logger import LogLevel, Logger
 
 try:
     from urlparse import urlparse

@@ -1,6 +1,6 @@
 import base64
 import datetime
-from ..RESTapiwrap import *
+from ..requestsender import Wrapper
 from ..utils.contextproperties import ContextProperties
 from ..utils.color import Color
 from ..utils.snowflake import Snowflake

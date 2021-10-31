@@ -1,4 +1,4 @@
-from ..RESTapiwrap import *
+from ..requestsender import Wrapper
 
 #This file includes apis that run when your client starts but idk where to organize them
 

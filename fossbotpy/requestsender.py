@@ -2,7 +2,7 @@ import json
 import inspect
 import time
 import requests
-from .logger import * #imports LogLevel and Logger
+from .logger import LogLevel, Logger
 
 #functions for REST requests in Wrapper class
 class Wrapper:
