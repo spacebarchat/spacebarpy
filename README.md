@@ -104,5 +104,5 @@ A: https://stackoverflow.com/a/53310545/14776493
 Q: ```import _brotli ImportError: DLL load failed: The specified module could not be found.``` How to fix?       
 A: https://github.com/google/brotli/issues/782        
      
-Q: ```The owner of this website (discord.com) has banned your access based on your browser's signature...```. How to fix?        
+Q: ```The owner of this website has banned your access based on your browser's signature...```. How to fix?        
 A: This is because of your user agent (https://stackoverflow.com/a/24914742/14776493). Either try again or reinitialize your client with a new user agent.       
