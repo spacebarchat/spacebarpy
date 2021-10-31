@@ -10,10 +10,10 @@ class SuperProperties:
     '''
     https://luna.gitlab.io/fosscord-unofficial-docs/science.html#super-properties-object
     '''
-    __slots__ = ['edited_s', 'buildnum', 'log']
-    def __init__(self, s, buildnum="request", log={"console":True, "file":False}):
+    __slots__ = ['edited_s', 'build_num', 'log']
+    def __init__(self, s, build_num="request", log={"console":True, "file":False}):
         self.edited_s = Wrapper.edited_req_session(s, {"remove": ["Authorization", "X-Super-Properties"]})
-        self.buildnum = buildnum
+        self.build_num = build_num
         self.log = log
 
     def request_build_number(self):
@@ -54,10 +54,10 @@ class SuperProperties:
         }
         if locale == None:
         	sp.pop("system_locale")
-        if self.buildnum == "request":
-            reqbuildnum = self.request_build_number()
-            if reqbuildnum != None:
-                sp["client_build_number"] = reqbuildnum
+        if self.build_num == "request":
+            reqbuild_num = self.request_build_number()
+            if reqbuild_num != None:
+                sp["client_build_number"] = reqbuild_num
         else:
-            sp["client_build_number"] = int(self.buildnum)
+            sp["client_build_number"] = int(self.build_num)
         return sp

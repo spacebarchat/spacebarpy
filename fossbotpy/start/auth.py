@@ -28,10 +28,10 @@ class Auth:
 		}
 		return Wrapper.send_request(self.edited_s, 'post', url, body, log=self.log)
 
-	def login(self, email, password, undelete, captcha, source, gift_code_sku_id):
+	def login(self, emailphone, password, undelete, captcha, source, gift_code_sku_id):
 		url = self.fosscord + "auth/login"
 		body = {
-			"login": email,
+			"login": emailphone,
 			"password": password,
 			"undelete": undelete,
 			"captcha_key": captcha,

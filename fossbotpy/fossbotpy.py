@@ -79,7 +79,7 @@ class Client:
 		#step 4: cookies
 		self.s.cookies.update({"locale": self.locale})
 		#step 5: super-properties (part of headers)
-		self.__super_properties = imports.SuperProperties(self.s, buildnum=build_num, log=log).get_super_properties(self.__user_agent, self.locale)
+		self.__super_properties = imports.SuperProperties(self.s, build_num=build_num, log=log).get_super_properties(self.__user_agent, self.locale)
 		self.s.headers.update({"X-Super-Properties": base64.b64encode(json.dumps(self.__super_properties).encode()).decode("utf-8")})
 		#step 6: token/authorization
 		token_provided = self.__user_token not in ("",None,False)
@@ -101,12 +101,24 @@ class Client:
 	test token
 	'''
 	def check_token(self, token):
+		"""checks if a token is valid, locked, or invalid
+
+		Parameters
+		----------
+		token : str
+		password : str
+
+		Returns
+		-------
+		tuple
+			(is_valid, is_locked)
+		"""
 		edited_s = imports.Wrapper().edited_req_session(self.s, {"update":{"Authorization":token}})
 		settings_test = imports.User(self.fosscord, edited_s, self.log).enable_dev_mode().status_code == 200
 		info_test = imports.User(self.fosscord, edited_s, self.log).info().status_code == 204
 		if settings_test:
 			Logger.log("Valid, non-locked token.", None, self.log)
-		elif info_test == 200:
+		elif info_test:
 			Logger.log("Valid, but locked token.", None, self.log)
 		else:
 			Logger.log("Invalid token.", None, self.log)
@@ -116,24 +128,107 @@ class Client:
 	start
 	'''
 	def register(self, email, password, username=None, invite=None, dob="1970-01-01", gift_code_sku_id=None, captcha=None):
+		"""registers an account
+
+		Parameters
+		----------
+		email : str
+		password : str
+		username : str, optional
+		invite : str, optional
+			the invite code, not the full invite url
+		dob : str, optional
+			date of birth; yyyy-mm-dd format; defaults to "1970-01-01"
+		gift_code_sku_id : str, optional
+			unknown
+		captcha : str, optional
+			captcha solution
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Auth(self.s, self.fosscord, self.log).register(email, password, username, invite, dob, gift_code_sku_id, captcha)
 
-	def login(self, email, password, undelete=False, source=None, gift_code_sku_id=None, captcha=None):
-		return imports.Auth(self.s, self.fosscord, self.log).login(email, password, undelete, captcha, source, gift_code_sku_id)
+	def login(self, emailphone, password, undelete=False, source=None, gift_code_sku_id=None, captcha=None):
+		"""login to an account with email/phone and password
+
+		Parameters
+		----------
+		emailphone : str
+			email or phone number (ex: "+10000000000")
+		password : str
+		undelete : bool, optional
+			recover a deleted account
+		source : str, optional
+			unknown
+		dob : str, optional
+			date of birth; yyyy-mm-dd format; defaults to "1970-01-01"
+		gift_code_sku_id : str, optional
+			unknown
+		captcha : str, optional
+			captcha solution
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
+		return imports.Auth(self.s, self.fosscord, self.log).login(emailphone, password, undelete, captcha, source, gift_code_sku_id)
 
 	def get_build_number(self):
+		"""get build number of fosscord instance
+
+		Returns
+		-------
+		int or None
+		"""
 		return imports.SuperProperties(self.s, "request", self.log).request_build_number()
 
-	def get_super_properties(self, user_agent, buildnum="request", locale=None):
-		return imports.SuperProperties(self.s, buildnum, self.log).get_super_properties(user_agent, locale) #self.locale
+	def get_super_properties(self, user_agent, build_num="request", locale=None):
+		"""get super properties dict
+
+		Parameters
+		----------
+		user_agent : str
+		build_num : int, optional
+			requests the build number from fosscord by default
+		locale : str, optional
+			ex: en-US
+		Returns
+		-------
+		super properties dictionary 
+			https://luna.gitlab.io/discord-unofficial-docs/science.html#super-properties-object
+		"""
+		return imports.SuperProperties(self.s, build_num, self.log).get_super_properties(user_agent, locale) #self.locale
 
 	def get_gateway_url(self):
+		"""login to an account with email/phone and password
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Other(self.s, self.fosscord, self.log).get_gateway_url()
 
 	def get_detectables(self):
+		"""login to an account with email/phone and password
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Other(self.s, self.fosscord, self.log).get_detectables()
 
 	def get_oauth2_tokens(self):
+		"""login to an account with email/phone and password
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Other(self.s, self.fosscord, self.log).get_oauth2_tokens()
 
 	'''
@@ -632,36 +727,6 @@ class Client:
 
 	def unarchive_thread(self, thread_id, lock=False):
 		return imports.Guild(self.fosscord,self.s,self.log).unarchive_thread(thread_id, lock)
-
-	def lookup_school(self, email, allow_multiple_guilds=True, use_verification_code=True):
-		return imports.Guild(self.fosscord,self.s,self.log).lookup_school(email, allow_multiple_guilds, use_verification_code)
-
-	def school_hub_waitlist_signup(self, email, school):
-		return imports.Guild(self.fosscord,self.s,self.log).school_hub_waitlist_signup(email, school)
-
-	def school_hub_signup(self, email, hub_id):
-		return imports.Guild(self.fosscord,self.s,self.log).school_hub_signup(email, hub_id)
-
-	def verify_school_hub_signup(self, hub_id, email, code):
-		return imports.Guild(self.fosscord,self.s,self.log).verify_school_hub_signup(hub_id, email, code)
-
-	def get_school_hub_guilds(self, hub_id):
-		return imports.Guild(self.fosscord,self.s,self.log).get_school_hub_guilds(hub_id)
-
-	def get_school_hub_directory_counts(self, hub_id):
-		return imports.Guild(self.fosscord,self.s,self.log).get_school_hub_directory_counts(hub_id)
-
-	def join_guild_from_school_hub(self, hub_id, guild_id):
-		return imports.Guild(self.fosscord,self.s,self.log).join_guild_from_school_hub(hub_id, guild_id)
-
-	def search_school_hub(self, hub_id, query):
-		return imports.Guild(self.fosscord,self.s,self.log).search_school_hub(hub_id, query)
-
-	def get_my_school_hub_guilds(self, hub_id):
-		return imports.Guild(self.fosscord,self.s,self.log).get_my_school_hub_guilds(hub_id)
-
-	def set_school_hub_guild_details(self, hub_id, guild_id, description, directory_id):
-		return imports.Guild(self.fosscord,self.s,self.log).set_school_hub_guild_details(hub_id, guild_id, description, directory_id)
 
 	def get_live_stages(self, extra=False):
 		return imports.Guild(self.fosscord,self.s,self.log).get_live_stages(extra)
