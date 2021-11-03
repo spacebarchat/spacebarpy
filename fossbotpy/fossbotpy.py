@@ -148,6 +148,7 @@ class Client:
 			unknown
 		captcha : str, optional
 			captcha solution
+
 		Returns
 		-------
 		requests.Response object
@@ -173,6 +174,7 @@ class Client:
 			unknown
 		captcha : str, optional
 			captcha solution
+
 		Returns
 		-------
 		requests.Response object
@@ -199,6 +201,7 @@ class Client:
 			requests the build number from fosscord by default
 		locale : str, optional
 			ex: en-US
+
 		Returns
 		-------
 		super properties dictionary 
@@ -246,6 +249,7 @@ class Client:
 		----------
 		recipients : list
 			list of user id strings. str input also accepted if only creating a dm with 1 user
+		
 		Returns
 		-------
 		requests.Response object
@@ -253,14 +257,14 @@ class Client:
 		"""
 		return imports.Messages(self.fosscord,self.s,self.log).create_dm(recipients)
 
-	#delete channel/DM/DM group
 	def delete_channel(self, channel_id):
 		"""delete a channel, thread, or dm
 
 		Parameters
 		----------
-		recipients : str
+		channel_id : str
 			channel id string
+
 		Returns
 		-------
 		requests.Response object
@@ -268,16 +272,14 @@ class Client:
 		"""
 		return imports.Messages(self.fosscord,self.s,self.log).delete_channel(channel_id)
 
-	#remove from DM group
 	def remove_from_dm_group(self, channel_id, user_id):
 		"""remove a user from a dm group
 
 		Parameters
 		----------
 		channel_id : str
-			channel id string
 		user_id : str
-			user id string
+
 		Returns
 		-------
 		requests.Response object
@@ -285,33 +287,105 @@ class Client:
 		"""
 		return imports.Messages(self.fosscord,self.s,self.log).remove_from_dm_group(channel_id, user_id)
 
-	#add to DM group
 	def add_to_dm_group(self, channel_id, user_id):
+		"""add user to dm group
+
+		Parameters
+		----------
+		channel_id : str
+		user_id : str
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Messages(self.fosscord,self.s,self.log).add_to_dm_group(channel_id, user_id)
 
-	#create DM group invite link
 	def create_dm_group_invite(self, channel_id, max_age_seconds=86400):
+		"""add user to dm group
+
+		Parameters
+		----------
+		channel_id : str
+		max_age_seconds : int (optional)
+			number of seconds for invite to last. Defaults to 86400 (24 hrs)
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Messages(self.fosscord,self.s,self.log).create_dm_group_invite(channel_id, max_age_seconds)
 
 	#change DM group name
 	def set_dm_group_name(self, channel_id, name):
+		"""set the name of a dm group
+
+		Parameters
+		----------
+		channel_id : str
+		name : str
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Messages(self.fosscord,self.s,self.log).set_dm_group_name(channel_id, name)
 
 	#change DM icon
 	def set_dm_group_icon(self, channel_id, image_path):
+		"""set the icon of a dm group
+
+		Parameters
+		----------
+		channel_id : str
+		image_path : str
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Messages(self.fosscord,self.s,self.log).set_dm_group_icon(channel_id, image_path)
 
 	#get recent messages
 	def get_messages(self,channel_id,num=1,before_date=None,around_message=None): # num <= 100, before_date is a snowflake
+		"""get past messages in a channel
+
+		Parameters
+		----------
+		channel_id : str
+		num : str (optional)
+			number of messages to fetch, between 0 and 100 inclusive. Defaults to 1
+		before_date : str (optional)
+			fosscord snowflake
+		around_message : str (optional)
+			message id string
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Messages(self.fosscord,self.s,self.log).get_messages(channel_id,num,before_date,around_message)
 
 	#get message by channel ID and message ID
 	def get_message(self, channel_id, message_id):
-		return imports.Messages(self.fosscord,self.s,self.log).get_message(channel_id, message_id)
+		"""get message by id
 
-	#greet with stickers
-	def greet(self, channel_id, sticker_ids=["749054660769218631"]):
-		return imports.Messages(self.fosscord,self.s,self.log).greet(channel_id, sticker_ids)
+		Parameters
+		----------
+		channel_id : str
+		message_id : str
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
+		return imports.Messages(self.fosscord,self.s,self.log).get_message(channel_id, message_id)
 
 	#send messages
 	def send_message(self, channel_id, message="", nonce="calculate", tts=False, embed=None, message_reference=None, allowed_mentions=None, sticker_ids=None):
@@ -469,8 +543,8 @@ class Client:
 		return imports.User(self.fosscord,self.s,self.log).set_profile_color(color)
 
 	#set username
-	def set_username(self, username, discriminator): #USER PASSWORD NEEDS TO BE SET BEFORE THIS IS RUN
-		return imports.User(self.fosscord,self.s,self.log).set_username(username, discriminator, password=self.__user_password)
+	def set_username(self, name, discriminator): #USER PASSWORD NEEDS TO BE SET BEFORE THIS IS RUN
+		return imports.User(self.fosscord,self.s,self.log).set_username(name, discriminator, password=self.__user_password)
 
 	#set email
 	def set_email(self, email): #USER PASSWORD NEEDS TO BE SET BEFORE THIS IS RUN
