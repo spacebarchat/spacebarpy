@@ -243,56 +243,6 @@ class Guild(object):
 	'''
 	other
 	'''
-	#lookup school
-	def lookup_school(self, email, allow_multiple_guilds, use_verification_code):
-		url = self.fosscord+"guilds/automations/email-domain-lookup"
-		body = {"email":email,"allow_multiple_guilds":allow_multiple_guilds}
-		if use_verification_code != None:
-			body["use_verification_code"] = use_verification_code
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	#https://fosscord.com/channels/hub_id/mainChannelID
-	def school_hub_waitlist_signup(self, email, school):
-		url = self.fosscord+"hub-waitlist/signup"
-		body = {"email":email,"school":school}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	def school_hub_signup(self, email, hub_id):
-		url = self.fosscord+'guilds/automations/email-domain-lookup'
-		body = {"email":email,"guild_id":hub_id,"allow_multiple_guilds":True,"use_verification_code":True}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	def verify_school_hub_signup(self, hub_id, email, code):
-		url = self.fosscord+'guilds/automations/email-domain-lookup/verify-code'
-		body = {"code":code,"guild_id":hub_id,"email":email}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	def get_school_hub_guilds(self, hub_id): #note, the "entity_id" returned in each entry is the guild_id
-		url = self.fosscord+'channels/'+hub_id+'/directory-entries' #ik it says channels, but it's the hub_id/"guild_id".
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def get_school_hub_directory_counts(self, hub_id): #this only returns the # of guilds/groups in each directory/category. This doesn't even return the category names
-		url = self.fosscord+'channels/'+hub_id+'/directory-entries/counts'
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def join_guild_from_school_hub(self, hub_id, guild_id):
-		url = self.fosscord+'guilds/'+guild_id+'/members/@me?lurker=false&directory_channel_id='+hub_id
-		header_mods = {"update":{"X-Context-Properties":ContextProperties.get("school hub guild")}}
-		return Wrapper.send_request(self.s, 'put', url, header_modifications=header_mods, log=self.log)
-
-	def search_school_hub(self, hub_id, query):
-		url = self.fosscord+'channels/'+hub_id+'/directory-entries/search?query='+query
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def get_my_school_hub_guilds(self, hub_id): #or guilds you own that can potentially be added to the hub
-		url = self.fosscord+'channels/'+hub_id+'/directory-entries/list'
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def set_school_hub_guild_details(self, hub_id, guild_id, description, directory_id): #directory_id (int) is not a snowflake
-		url = self.fosscord+'channels/'+hub_id+'/directory-entry/'+guild_id
-		body = {"description":description,"primary_category_id":directory_id}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
 	def get_live_stages(self, extra):
 		url = self.fosscord+'stage-instances'
 		if extra:

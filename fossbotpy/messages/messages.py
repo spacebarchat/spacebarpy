@@ -23,8 +23,8 @@ class Messages(object):
 		self.s = s
 		self.log = log
 
-	#just the raw endpoint
-	def create_dmraw(self, recipients):
+	#create a DM
+	def create_dm(self, recipients):
 		url = self.fosscord+"users/@me/channels"
 		if isinstance(recipients, str):
 			recipients = [recipients]
@@ -34,12 +34,6 @@ class Messages(object):
 		else:
 			context = "e30=" #{}
 		return Wrapper.send_request(self.s, 'post', url, body, header_modifications={"update":{"X-Context-Properties":context}}, log=self.log)
-
-	#create a DM
-	def create_dm(self, recipients):
-		req = self.create_dmraw(recipients)
-		self.get_messages(req.json()["id"], num=50, before_date=None, around_message=None)
-		return req
 
 	#delete_channel (also works for deleting dms/dm-groups)
 	def delete_channel(self, channel_id):

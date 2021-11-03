@@ -139,9 +139,9 @@ class User(object):
 		body = {"accent_color": Color.get(color)}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
-	def set_username(self, username, password):
+	def set_username(self, username, discriminator, password):
 		url = self.fosscord+"users/@me"
-		body = {"username": username, "password": password}
+		body = {"username": username, "password": password, "discriminator":discriminator}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
 	def set_email(self, email, password):
@@ -152,11 +152,6 @@ class User(object):
 	def set_password(self, new_password, password):
 		url = self.fosscord+"users/@me"
 		body = {"password": password, "new_password": new_password}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def set_discriminator(self, discriminator, password):
-		url = self.fosscord+"users/@me"
-		body = {"password":password, "discriminator":discriminator}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
 	#as of right now, you need to be in the beta program for this to work

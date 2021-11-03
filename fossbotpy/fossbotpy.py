@@ -64,7 +64,7 @@ class Client:
 			"Sec-Fetch-Dest": "empty",
 			"Sec-Fetch-Mode": "cors",
 			"Sec-Fetch-Site": "same-origin",
-			"X-Debug-Options": "bugReporterEnabled",
+			"X-Debug-Options": "logGatewayEvents,logOverlayEvents,logAnalyticsEvents,bugReporterEnabled",
 			"Connection": "keep-alive",
 			"Content-Type": "application/json"
 		}
@@ -89,7 +89,12 @@ class Client:
 		self.s.headers.update({"Authorization": self.__user_token}) #update headers
 		#step 7: gateway (object initialization)
 		from .gateway.gateway import GatewayServer
-		self.websocketurl = imports.Other(self.s, self.fosscord, self.log).get_gateway_url().json()['url']
+		try:
+			self.websocketurl = imports.Other(self.s, self.fosscord, self.log).get_gateway_url().json()['url']
+		except:
+			self.websocketurl = url_params[1]
+			if url_params[1].endswith('/api'):
+				self.websocketurl = self.websocketurl[:-4]
 		self.websocketurl += '/?encoding=json&v={}'.format(self.api_version) #&compress=zlib-stream #fosscord's zlib-stream is kinda broken rn
 		self.gateway = GatewayServer(self.websocketurl, self.__user_token, self.__super_properties, self.s, self.fosscord, log) #self.s contains proxy host and proxy port already
 		#step 8: somewhat prepare for science events
@@ -234,16 +239,50 @@ class Client:
 	'''
 	Messages
 	'''
-	#create DM
-	def create_dm(self,recipients):
+	def create_dm(self, recipients):
+		"""create a dm / dm group
+
+		Parameters
+		----------
+		recipients : list
+			list of user id strings. str input also accepted if only creating a dm with 1 user
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Messages(self.fosscord,self.s,self.log).create_dm(recipients)
 
 	#delete channel/DM/DM group
 	def delete_channel(self, channel_id):
+		"""delete a channel, thread, or dm
+
+		Parameters
+		----------
+		recipients : str
+			channel id string
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Messages(self.fosscord,self.s,self.log).delete_channel(channel_id)
 
 	#remove from DM group
 	def remove_from_dm_group(self, channel_id, user_id):
+		"""remove a user from a dm group
+
+		Parameters
+		----------
+		channel_id : str
+			channel id string
+		user_id : str
+			user id string
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+		"""
 		return imports.Messages(self.fosscord,self.s,self.log).remove_from_dm_group(channel_id, user_id)
 
 	#add to DM group
@@ -430,8 +469,8 @@ class Client:
 		return imports.User(self.fosscord,self.s,self.log).set_profile_color(color)
 
 	#set username
-	def set_username(self, username): #USER PASSWORD NEEDS TO BE SET BEFORE THIS IS RUN
-		return imports.User(self.fosscord,self.s,self.log).set_username(username, password=self.__user_password)
+	def set_username(self, username, discriminator): #USER PASSWORD NEEDS TO BE SET BEFORE THIS IS RUN
+		return imports.User(self.fosscord,self.s,self.log).set_username(username, discriminator, password=self.__user_password)
 
 	#set email
 	def set_email(self, email): #USER PASSWORD NEEDS TO BE SET BEFORE THIS IS RUN
@@ -440,10 +479,6 @@ class Client:
 	#set password
 	def set_password(self, new_password): #USER PASSWORD NEEDS TO BE SET BEFORE THIS IS RUN
 		return imports.User(self.fosscord,self.s,self.log).set_password(new_password, password=self.__user_password)
-
-	#set discriminator
-	def set_discriminator(self, discriminator): #USER PASSWORD NEEDS TO BE SET BEFORE THIS IS RUN
-		return imports.User(self.fosscord,self.s,self.log).set_discriminator(discriminator, password=self.__user_password)
 
 	#set about me
 	def set_about_me(self, bio):
