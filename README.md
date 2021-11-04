@@ -41,7 +41,6 @@ py -3 -m pip install -U fossbotpy
 installed automatically using above methods     
 - requests
 - requests_toolbelt
-- brotli
 - websocket_client==0.59.0
 - filetype
 - ua-parser
@@ -99,10 +98,7 @@ bot.gateway.run()
 
 ## FAQ
 Q: How to fix "\[SSL: CERTIFICATE_VERIFY_FAILED]" errors?      
-A: https://stackoverflow.com/a/53310545/14776493       
-
-Q: ```import _brotli ImportError: DLL load failed: The specified module could not be found.``` How to fix?       
-A: https://github.com/google/brotli/issues/782        
+A: https://stackoverflow.com/a/53310545/14776493              
      
 Q: ```The owner of this website has banned your access based on your browser's signature...```. How to fix?        
 A: This is because of your user agent (https://stackoverflow.com/a/24914742/14776493). Either try again or reinitialize your client with a new user agent.       

@@ -56,7 +56,7 @@ class Client:
 			"Origin": main_url,
 			"User-Agent": self.__user_agent,
 			"Accept": "*/*",
-			"Accept-Encoding": "gzip, deflate, br",
+			"Accept-Encoding": "gzip, deflate",
 			"Accept-Language": self.locale,
 			"Cache-Control": "no-cache",
 			"Pragma": "no-cache",
@@ -318,7 +318,6 @@ class Client:
 		"""
 		return imports.Messages(self.fosscord,self.s,self.log).create_dm_group_invite(channel_id, max_age_seconds)
 
-	#change DM group name
 	def set_dm_group_name(self, channel_id, name):
 		"""set the name of a dm group
 
@@ -334,7 +333,6 @@ class Client:
 		"""
 		return imports.Messages(self.fosscord,self.s,self.log).set_dm_group_name(channel_id, name)
 
-	#change DM icon
 	def set_dm_group_icon(self, channel_id, image_path):
 		"""set the icon of a dm group
 
@@ -350,7 +348,6 @@ class Client:
 		"""
 		return imports.Messages(self.fosscord,self.s,self.log).set_dm_group_icon(channel_id, image_path)
 
-	#get recent messages
 	def get_messages(self,channel_id,num=1,before_date=None,around_message=None): # num <= 100, before_date is a snowflake
 		"""get past messages in a channel
 
@@ -371,7 +368,6 @@ class Client:
 		"""
 		return imports.Messages(self.fosscord,self.s,self.log).get_messages(channel_id,num,before_date,around_message)
 
-	#get message by channel ID and message ID
 	def get_message(self, channel_id, message_id):
 		"""get message by id
 
@@ -384,15 +380,40 @@ class Client:
 		-------
 		requests.Response object
 			https://www.w3schools.com/python/ref_requests_response.asp
+			note: if the message is not found, the .json() will return an empty list
 		"""
 		return imports.Messages(self.fosscord,self.s,self.log).get_message(channel_id, message_id)
 
-	#send messages
 	def send_message(self, channel_id, message="", nonce="calculate", tts=False, embed=None, message_reference=None, allowed_mentions=None, sticker_ids=None):
+		"""send message to channel/DM/thread
+
+		Parameters
+		----------
+		channel_id : str
+		message : str (optional)
+		nonce : str (optional)
+			by default, the current discord snowflake is used
+		tts : bool (optional)
+			text to speech
+		embed : dict (optional)
+			can be constructed using fossbotpy.utils.embed.Embedder
+		message_reference : dict (optional)
+			message (in a guild) that is being replied to. Format is {"guild_id":"","channel_id":"","message_id":""}.
+		allowed_mentions : dict (optional)
+			who to ping when replying or mentioning others. Format is {"parse":["users","roles","everyone"],"replied_user":False}
+		sticker_ids : list (optional)
+			list of sticker id strings
+
+		Returns
+		-------
+		requests.Response object
+			https://www.w3schools.com/python/ref_requests_response.asp
+			note: if the message is not found, the .json() will return an empty list
+		"""
 		return imports.Messages(self.fosscord,self.s,self.log).send_message(channel_id, message, nonce, tts, embed, message_reference, allowed_mentions, sticker_ids)
 
 	#send files (local or link)
-	def send_file(self,channel_id,filelocation,isurl=False,message="", tts=False, message_reference=None, sticker_ids=None):
+	def send_file(self, channel_id, filelocation, isurl=False, message="", tts=False, message_reference=None, sticker_ids=None):
 		return imports.Messages(self.fosscord,self.s,self.log).send_file(channel_id,filelocation,isurl,message, tts, message_reference, sticker_ids)
 
 	#reply, with a message and/or file

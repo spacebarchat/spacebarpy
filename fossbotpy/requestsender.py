@@ -27,16 +27,6 @@ class Wrapper:
 		formatted = " [+] {} {}".format(function, text)
 		return formatted, color
 
-	#decompression for brotli
-	@staticmethod
-	def brdecompress(payload, log):
-		try:
-			import brotli
-			data = brotli.decompress(payload)
-			return data
-		except:
-			return payload
-
 	#header modifications, like endpoints that don't need auth, superproperties, etc; also for updating headers like xfingerprint
 	@staticmethod
 	def edited_req_session(reqsession, header_modifications):
@@ -116,14 +106,11 @@ class Wrapper:
 				data['timeout'] = timeout
 			# 6. the request
 			response = Wrapper.retry_logic(getattr(s, method), url, data, log)
-			# 7. brotli decompression of response
-			if response and response.headers.get('Content-Encoding') == "br": #decompression; gzip/deflate is automatically handled by requests module
-				response._content = Wrapper.brdecompress(response.content, log)
-			# 8. log response
+			# 7. log response
 			if response != None:
 				text, color = Wrapper.log_formatter(function_name, response.text, part="response")
 				Logger.log(text, color, log)
-			# 9. return response object with decompressed content
+			# 8. return response object with decompressed content
 			return response
 		else:
 			Logger.log('Invalid request method.', None, log)

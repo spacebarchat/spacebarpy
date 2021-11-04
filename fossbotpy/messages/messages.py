@@ -81,7 +81,10 @@ class Messages(object):
 	#get message by channel ID and message ID
 	def get_message(self, channel_id, message_id):
 		url = self.fosscord+"channels/"+channel_id+"/messages?limit=1&around="+message_id
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
+		res = Wrapper.send_request(self.s, 'get', url, log=self.log)
+		if res and res.json()[0]['id'] != message_id:
+			res._content = '[]'
+		return res
 
 	#greet with stickers
 	def greet(self, channel_id, sticker_ids):
