@@ -70,7 +70,7 @@ class Messages(object):
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
 	#get messages
-	def get_messages(self,channel_id,num,before_date,around_message): # num is between 1 and 100, before_date is a snowflake
+	def get_messages(self, channel_id, num, before_date, around_message): # num is between 1 and 100, before_date is a snowflake
 		url = self.fosscord+"channels/"+channel_id+"/messages?limit="+str(num)
 		if before_date != None:
 			url += "&before="+str(before_date)
@@ -79,10 +79,11 @@ class Messages(object):
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
 	#get message by channel ID and message ID
+	#this doesnt work yet on fosscord cause fosscord is doing weird stuff with the around parameter...
 	def get_message(self, channel_id, message_id):
 		url = self.fosscord+"channels/"+channel_id+"/messages?limit=1&around="+message_id
 		res = Wrapper.send_request(self.s, 'get', url, log=self.log)
-		if res and res.json()[0]['id'] != message_id:
+		if len(res._content)>2 and res.json()[0]['id'] != message_id:
 			res._content = '[]'
 		return res
 
@@ -112,12 +113,12 @@ class Messages(object):
 		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
 
 	#send file
-	def send_file(self,channel_id,filelocation,isurl,message, tts, message_reference, sticker_ids):
-		mimetype, extensiontype, fd = Fileparse(self.s,self.log).parse(filelocation,isurl) #guess extension from file data
+	def send_file(self, channel_id, file_location, is_url, message, tts, embed, message_reference, sticker_ids):
+		mimetype, extensiontype, fd = Fileparse(self.s,self.log).parse(file_location,is_url) #guess extension from file data
 		if mimetype == 'invalid': #error out
 			return
-		if isurl: #get filename
-			a = urlparse(filelocation)
+		if is_url: #get filename
+			a = urlparse(file_location)
 			if len(os.path.basename(a.path))>0: #if everything is normal...
 				filename = os.path.basename(a.path)
 			else: 
@@ -126,36 +127,23 @@ class Messages(object):
 				else: #if filetype detected but extension not given
 					filename = 'unknown.'+extensiontype
 		else: #local file
-			filename = os.path.basename(os.path.normpath(filelocation))
+			filename = os.path.basename(os.path.normpath(file_location))
 		#now time to post the file
 		url = self.fosscord+'channels/'+channel_id+'/messages'
-		if isurl:
-			payload = {"content":message,"tts":tts}
-			if message_reference != None:
-				payload["message_reference"] = message_reference
-				payload["type"] = 19
-			if sticker_ids != None:
-				payload["sticker_ids"] = sticker_ids
-			fields={"file":(filename,fd,mimetype), "payload_json":(None,json.dumps(payload))}
-		else:
-			payload = {"content":message,"tts":tts}
-			if message_reference != None:
-				payload["message_reference"] = message_reference
-				payload["type"] = 19
-			if sticker_ids != None:
-				payload["sticker_ids"] = sticker_ids
-			fields={"file":(filename,open(filelocation,'rb').read(),mimetype), "payload_json":(None,json.dumps(payload))}
-		m=MultipartEncoder(fields=fields,boundary='----WebKitFormBoundary'+''.join(random.sample(string.ascii_letters+string.digits,16)))
-		self.s.headers.update({"Content-Type":m.content_type})
-		response = Wrapper.send_request(self.s, 'post', url, body=m, log=self.log)
-		self.s.headers.update({"Content-Type":"application/json"})
-		return response
-
-	def reply(self, guild_id, channel_id, message_id, message, nonce, tts, embed, allowed_mentions, sticker_ids, file, isurl):
-		if file == None:
-			self.send_message(channel_id, message, nonce=nonce, tts=tts, embed=embed, message_reference={"guild_id":guild_id,"channel_id":channel_id,"message_id":message_id}, allowed_mentions=allowed_mentions, sticker_ids=sticker_ids)
-		else:
-			self.send_file(channel_id, file, isurl=isurl, message=message, tts=tts, message_reference={"guild_id":guild_id,"channel_id":channel_id,"message_id":message_id}, sticker_ids=sticker_ids)
+		payload = {"content":message,"tts":tts}
+		if message_reference != None:
+			payload["message_reference"] = message_reference
+			payload["type"] = 19
+		if sticker_ids != None:
+			payload["sticker_ids"] = sticker_ids
+		if embed != None:
+			payload["embed"] = embed
+		if not is_url:
+			with open(file_location, 'rb') as f:
+				fd = f.read()
+		fields={"file":(filename, fd, mimetype), "payload_json":(None, json.dumps(payload))}
+		m = MultipartEncoder(fields=fields, boundary='----WebKitFormBoundary'+''.join(random.sample(string.ascii_letters+string.digits, 16)))
+		return Wrapper.send_request(self.s, 'post', url, body=m, header_modifications={"update":{"Content-Type":m.content_type}}, log=self.log)
 
 	def search_messages(self, guild_id, channel_id, author_id, author_type, mentions_user_id, has, link_hostname, embed_provider, embed_type, attachment_extension, attachment_filename, mentions_everyone, include_nsfw, after_date, before_date, text_search, after_num_results, limit): #classic fosscord search function, results with key "hit" are the results you searched for, after_num_results (aka offset) is multiples of 25 and indicates after which messages (type int), filterResults defaults to False
 		if guild_id:
@@ -260,7 +248,7 @@ class Messages(object):
 		url = self.fosscord+"channels/"+channel_id+"/pins/"+message_id
 		return Wrapper.send_request(self.s, 'put', url, log=self.log)
 
-	def un_pin_message(self, channel_id, message_id):
+	def unpin_message(self, channel_id, message_id):
 		url = self.fosscord+"channels/"+channel_id+"/pins/"+message_id
 		return Wrapper.send_request(self.s, 'delete', url, log=self.log)
 
