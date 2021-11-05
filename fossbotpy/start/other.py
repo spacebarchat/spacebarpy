@@ -10,13 +10,13 @@ class Other:
         self.log = log
 
     def get_gateway_url(self):
-        url = self.fosscord + "gateway"
+        url = self.fosscord + 'gateway'
         return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
     def get_detectables(self):
-        url = self.fosscord + "applications/detectable"
+        url = self.fosscord + 'applications/detectable'
         return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
     def get_oauth2_tokens(self):
-        url = self.fosscord + "oauth2/tokens"
+        url = self.fosscord + 'oauth2/tokens'
         return Wrapper.send_request(self.s, 'get', url, log=self.log)

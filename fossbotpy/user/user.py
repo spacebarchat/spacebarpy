@@ -13,7 +13,7 @@ class User(object):
 		self.log = log
 
 	def get_relationships(self):
-		url = self.fosscord+"users/@me/relationships"
+		url = '{}users/@me/relationships'.format(self.fosscord)
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
 	def get_mutual_friends(self, user_id):

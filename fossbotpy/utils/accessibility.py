@@ -1,4 +1,4 @@
-#those accessibility numbers that fosscord uses for its "science"
+#accessibility numbers for science. Pretty sure fosscord just hardcodes this as 128.
 
 class ACCESSIBILITY_FEATURES:
 	SCREENREADER = 1 << 0
@@ -24,7 +24,7 @@ class Accessibility:
 	def calculate_accessibility(types):
 		accessibility_num = 0
 		for i in types:
-			feature = i.upper().replace(" ", "_")
+			feature = i.upper().replace(' ', '_')
 			if hasattr(ACCESSIBILITY_FEATURES, feature):
 				accessibility_num |= getattr(ACCESSIBILITY_FEATURES, feature)
 		return accessibility_num

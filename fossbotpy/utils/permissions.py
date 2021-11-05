@@ -36,7 +36,7 @@ class PERMS:
 	MANAGE_EMOJIS           =   1 << 30 #       Allows management and editing of emojis
 	USE_SLASH_COMMANDS      =   1 << 31 #       Allows members to use slash commands in text channels
 	REQUEST_TO_SPEAK        =   1 << 32 #       Allows for requesting to speak in stage channels.
-	#??                     =   1 << 33 #       ??
+	#GUILD_EVENTS           =   1 << 33 #       Allows for interacting with guild events
 	MANAGE_THREADS          =   1 << 34 #       Allows for deleting and archiving threads, and viewing all private threads
 	USE_PUBLIC_THREADS      =   1 << 35 #       Allows for creating and participating in threads
 	USE_PRIVATE_THREADS     =   1 << 36 #       Allows for creating and participating in private threads
@@ -53,10 +53,10 @@ class Permissions:
 		if member_id == guild_owner_id:
 			return PERMS.ALL
 
-		permissions = int(guild_roles[guild_id]["permissions"])
+		permissions = int(guild_roles[guild_id]['permissions'])
 
 		for member_role_id in member_roles:
-			permissions |= int(guild_roles[member_role_id]["permissions"])
+			permissions |= int(guild_roles[member_role_id]['permissions'])
 
 		if permissions & PERMS.ADMINISTRATOR == PERMS.ADMINISTRATOR:
 			return PERMS.ALL
@@ -70,28 +70,28 @@ class Permissions:
 			return PERMS.ALL
 
 		permissions = base_permissions
-		channel_everyone_overwrites = next((i for i in channel_overwrites if i["id"]==guild_id), False) #https://stackoverflow.com/a/8653568/14776493
+		channel_everyone_overwrites = next((i for i in channel_overwrites if i['id']==guild_id), False) #https://stackoverflow.com/a/8653568/14776493
 		if channel_everyone_overwrites:
-			permissions &= ~int(channel_everyone_overwrites["deny"])
-			permissions |= int(channel_everyone_overwrites["allow"])
+			permissions &= ~int(channel_everyone_overwrites['deny'])
+			permissions |= int(channel_everyone_overwrites['allow'])
 
 		# Apply role specific overwrites.
 		allow = 0
 		deny = 0
 		for member_role_id in member_roles: #for the pertinent roles
-			overwrite_role = next((i for i in channel_overwrites if i["id"]==member_role_id), False) #get the corresponding channel overrides
+			overwrite_role = next((i for i in channel_overwrites if i['id']==member_role_id), False) #get the corresponding channel overrides
 			if overwrite_role:
-				allow |= int(overwrite_role["allow"])
-				deny |= int(overwrite_role["deny"])
+				allow |= int(overwrite_role['allow'])
+				deny |= int(overwrite_role['deny'])
 
 		permissions &= ~deny
 		permissions |= allow
 
 		# Apply member specific overwrite if it exist.
-		overwrite_member = next((i for i in channel_overwrites if i["id"]==member_id), False)
+		overwrite_member = next((i for i in channel_overwrites if i['id']==member_id), False)
 		if overwrite_member:
-			permissions &= ~int(overwrite_member["deny"])
-			permissions |= int(overwrite_member["allow"])
+			permissions &= ~int(overwrite_member['deny'])
+			permissions |= int(overwrite_member['allow'])
 
 		return permissions
 

@@ -2,20 +2,20 @@
 from .importmanager import Imports
 imports = Imports(
 	{
-		"Wrapper": "fossbotpy.requestsender",
-		"Auth": "fossbotpy.start.auth",
-		"SuperProperties": "fossbotpy.start.superproperties",
-		"Other": "fossbotpy.start.other",
-		"Guild": "fossbotpy.guild.guild",
-		"Messages": "fossbotpy.messages.messages",
-		"User": "fossbotpy.user.user",
-		"Stickers": "fossbotpy.stickers.stickers",
-		"Science": "fossbotpy.science.science",
+		'Wrapper': 'fossbotpy.requestsender',
+		'Auth': 'fossbotpy.start.auth',
+		'SuperProperties': 'fossbotpy.start.superproperties',
+		'Other': 'fossbotpy.start.other',
+		'Guild': 'fossbotpy.guild.guild',
+		'Channels': 'fossbotpy.channels.channels',
+		'User': 'fossbotpy.user.user',
+		'Stickers': 'fossbotpy.stickers.stickers',
+		'Science': 'fossbotpy.science.science',
 	}
 )
 
 #logging to console/file
-from .logger import * #imports LogLevel and Logger
+from .logger import LogLevel, Logger
 
 #other imports
 import time
@@ -27,23 +27,25 @@ import random
 
 #client initialization
 class Client:
-	"""A fosscord client
+	"""A fosscord client.
+	can be used with or without a token
 
     Basic Usage:
 
       >>> import fossbotpy
-      >>> bot = fossbotpy.Client(token='poop')
-      >>> bot.info()
+      >>> bot = fossbotpy.Client()
+      >>> bot.get_gateway_url()
       <Response [200]>
 
     Or as a context manager:
 
-      >>> with fossbotpy.Client(token='poop') as bot:
-      ...     bot.info()
+	  >>> import fossbotpy
+      >>> with fossbotpy.Client() as bot:
+      ...     bot.get_gateway_url()
       <Response [200]>
 	"""
-	__slots__ = ['log', 'locale', '__user_token', '__user_email', '__user_password', 'user_data', '__proxy_host', '__proxy_port', 'api_version', 'fosscord', 'websocketurl', '__user_agent', 's', '__super_properties', 'gateway', 'Science']
-	def __init__(self, email="", password="", token="", proxy_host=None, proxy_port=None, user_agent="random", locale="en-US", build_num="request", base_url="https://dev.fosscord.com/api/v9/", log={"console":True, "file":False}):
+	__slots__ = ['log', 'locale', '__user_token', '__user_email', '__user_password', 'user_data', '__proxy_host', '__proxy_port', 'api_version', 'fosscord', 'main_url', 'websocketurl', '__user_agent', 's', '__super_properties', 'gateway', 'Science']
+	def __init__(self, email='', password='', token='', proxy_host=None, proxy_port=None, user_agent='random', locale='en-US', build_num='request', base_url='https://dev.fosscord.com/api/v9/', log={'console':True, 'file':False}):
 		#step 1: vars
 		self.log = log
 		self.locale = locale
@@ -55,12 +57,10 @@ class Client:
 		self.__proxy_port = None if proxy_port in (None,False) else proxy_port
 		url_params = re.search(r'(https?):\/\/(.*api)?(\/v\d)?', base_url).groups()
 		self.api_version = int(url_params[2][2:]) if len(url_params)>2 else 9
-		self.fosscord = base_url
-		if not base_url.endswith('/'):
-			self.fosscord += '/'
-		main_url = url_params[0]+'//'+url_params[1][:-4]
+		self.fosscord = base_url+'/' if not base_url.endswith('/') else base_url
+		self.main_url = main_url = url_params[0]+'//'+url_params[1][:-4]
 		#step 2: user agent
-		if user_agent != "random":
+		if user_agent != 'random':
 			self.__user_agent = user_agent
 		else:
 			import random_user_agent.user_agent #only really want to import this if needed
@@ -68,52 +68,53 @@ class Client:
 			Logger.log('Randomly generated user agent: '+self.__user_agent, None, log)
 		#step 3: http request headers
 		headers = {
-			"Origin": main_url,
-			"User-Agent": self.__user_agent,
-			"Accept": "*/*",
-			"Accept-Encoding": "gzip, deflate",
-			"Accept-Language": self.locale,
-			"Cache-Control": "no-cache",
-			"Pragma": "no-cache",
-			"Referer": "{}/channels/@me".format(main_url),
-			"Sec-Fetch-Dest": "empty",
-			"Sec-Fetch-Mode": "cors",
-			"Sec-Fetch-Site": "same-origin",
-			"X-Debug-Options": "logGatewayEvents,logOverlayEvents,logAnalyticsEvents,bugReporterEnabled",
-			"Connection": "keep-alive",
-			"Content-Type": "application/json"
+			'Origin': main_url,
+			'User-Agent': self.__user_agent,
+			'Accept': '*/*',
+			'Accept-Encoding': 'gzip, deflate',
+			'Accept-Language': self.locale,
+			'Cache-Control': 'no-cache',
+			'Pragma': 'no-cache',
+			'Referer': '{}/channels/@me'.format(main_url),
+			'Sec-Fetch-Dest': 'empty',
+			'Sec-Fetch-Mode': 'cors',
+			'Sec-Fetch-Site': 'same-origin',
+			'X-Debug-Options': 'logGatewayEvents,logOverlayEvents,logAnalyticsEvents,bugReporterEnabled',
+			'Connection': 'keep-alive',
+			'Content-Type': 'application/json'
 		}
 		self.s = requests.Session()
 		self.s.headers.update(headers)
 		if self.__proxy_host != None: #self.s.proxies defaults to {}
 			proxies = {
-			'http': "http://" + self.__proxy_host+':'+self.__proxy_port,
-			'https': "https://" + self.__proxy_host+':'+self.__proxy_port
+			'http': 'http://{}:{}'.format(self.__proxy_host, self.__proxy_port),
+			'https': 'https://{}:{}'.format(self.__proxy_host, self.__proxy_port)
 			}
 			self.s.proxies.update(proxies)
 		#step 4: cookies
-		self.s.cookies.update({"locale": self.locale})
+		self.s.cookies.update({'locale': self.locale})
 		#step 5: super-properties (part of headers)
-		self.__super_properties = imports.SuperProperties(self.s, build_num=build_num, log=log).get_super_properties(self.__user_agent, self.locale)
-		self.s.headers.update({"X-Super-Properties": base64.b64encode(json.dumps(self.__super_properties).encode()).decode("utf-8")})
+		self.__super_properties = imports.SuperProperties(self.s, build_num, log).get_super_properties(self.__user_agent, self.locale)
+		jsonsp = json.dumps(self.__super_properties).encode()
+		self.s.headers.update({'X-Super-Properties': base64.b64encode(jsonsp).decode('utf-8')})
 		#step 6: token/authorization
-		token_provided = self.__user_token not in ("",None,False)
-		if not token_provided:
-			login_response = imports.Auth(self.s, self.fosscord, log).login(email=email, password=password, undelete=False, captcha=None, source=None, gift_code_sku_id=None)
+		login_needed = token in ('', None, False) and {email, password}.isdisjoint({'', None, False})
+		if login_needed:
+			login_response = self.login(email, password)
 			self.__user_token = login_response.json().get('token') #update token from "" to actual value
-		self.s.headers.update({"Authorization": self.__user_token}) #update headers
+		self.s.headers.update({'Authorization': self.__user_token}) #update headers
 		#step 7: gateway (object initialization)
 		from .gateway.gateway import GatewayServer
 		try:
-			self.websocketurl = imports.Other(self.s, self.fosscord, self.log).get_gateway_url().json()['url']
+			self.websocketurl = self.get_gateway_url().json()['url']
 		except:
 			self.websocketurl = url_params[1]
 			if url_params[1].endswith('/api'):
 				self.websocketurl = self.websocketurl[:-4]
 		self.websocketurl += '/?encoding=json&v={}'.format(self.api_version) #&compress=zlib-stream #fosscord's zlib-stream is kinda broken rn
-		self.gateway = GatewayServer(self.websocketurl, self.__user_token, self.__super_properties, self.s, self.fosscord, log) #self.s contains proxy host and proxy port already
+		self.gateway = GatewayServer(self.websocketurl, self.__user_token, self.__super_properties, self.s, self.fosscord, log)
 		#step 8: somewhat prepare for science events
-		self.Science = ""
+		self.Science = ''
 
 ##########################################################
 
@@ -123,7 +124,7 @@ class Client:
 	def __enter__(self):
 		return self
 	def __exit__(self, type, value, traceback):
-		pass #logging out doesn't actually do anything so
+		pass #logging out doesn't actually do anything so...
 
 	'''
 	test token
@@ -141,41 +142,41 @@ class Client:
 		tuple of booleans
 			(is_valid, is_locked)
 		"""
-		edited_s = imports.Wrapper().edited_req_session(self.s, {"update":{"Authorization":token}})
-		settings_test = imports.User(self.fosscord, edited_s, self.log).enable_dev_mode().status_code == 200
-		info_test = imports.User(self.fosscord, edited_s, self.log).info().status_code == 204
-		if settings_test:
-			Logger.log("Valid, non-locked token.", None, self.log)
-		elif info_test:
-			Logger.log("Valid, but locked token.", None, self.log)
+		edited_s = imports.Wrapper().edited_req_session(self.s, {'update':{'Authorization':token}})
+		user = imports.User(self.fosscord, edited_s, self.log)
+		settings_test = user.enable_dev_mode()
+		info_test = user.info()
+		if settings_test.status_code == 200:
+			Logger.log('Valid, non-locked token.', None, self.log)
+		elif info_test.status_code == 204:
+			Logger.log('Valid, but locked token.', None, self.log)
 		else:
-			Logger.log("Invalid token.", None, self.log)
+			Logger.log('Invalid token.', None, self.log)
 		return settings_test, info_test
 
 	'''
 	start
 	'''
-	def register(self, email, password, username=None, invite=None, dob="1970-01-01", gift_code_sku_id=None, captcha=None):
+	def register(self, email, password, username=None, invite=None, dob='1970-01-01', gift_code_sku_id=None, captcha=None):
 		"""registers an account
 
 		Parameters
 		----------
 		email : str
 		password : str
-		username : str, optional
-		invite : str, optional
+		username : str (optional)
+		invite : str (optional)
 			the invite code, not the full invite url
-		dob : str, optional
-			date of birth; yyyy-mm-dd format; defaults to "1970-01-01"
-		gift_code_sku_id : str, optional
+		dob : str (optional)
+			date of birth; yyyy-mm-dd format; defaults to '1970-01-01'
+		gift_code_sku_id : str (optional)
 			unknown
-		captcha : str, optional
+		captcha : str (optional)
 			captcha solution
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
 		return imports.Auth(self.s, self.fosscord, self.log).register(email, password, username, invite, dob, gift_code_sku_id, captcha)
 
@@ -187,21 +188,18 @@ class Client:
 		emailphone : str
 			email or phone number (ex: "+10000000000")
 		password : str
-		undelete : bool, optional
+		undelete : bool (optional)
 			recover a deleted account
-		source : str, optional
+		source : str (optional)
 			unknown
-		dob : str, optional
-			date of birth; yyyy-mm-dd format; defaults to "1970-01-01"
-		gift_code_sku_id : str, optional
+		gift_code_sku_id : str (optional)
 			unknown
-		captcha : str, optional
+		captcha : str (optional)
 			captcha solution
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
 		return imports.Auth(self.s, self.fosscord, self.log).login(emailphone, password, undelete, captcha, source, gift_code_sku_id)
 
@@ -212,23 +210,22 @@ class Client:
 		-------
 		int or None
 		"""
-		return imports.SuperProperties(self.s, "request", self.log).request_build_number()
+		return imports.SuperProperties(self.s, 'request', self.log).request_build_number()
 
-	def get_super_properties(self, user_agent, build_num="request", locale=None):
+	def get_super_properties(self, user_agent, build_num='request', locale=None):
 		"""get super properties dict
 
 		Parameters
 		----------
 		user_agent : str
-		build_num : int, optional
+		build_num : int (optional)
 			requests the build number from fosscord by default
-		locale : str, optional
-			ex: en-US
+		locale : str (optional)
+			ex: 'en-US'
 
 		Returns
 		-------
-		super properties dictionary 
-			https://luna.gitlab.io/discord-unofficial-docs/science.html#super-properties-object
+		[super properties dictionary](https://luna.gitlab.io/discord-unofficial-docs/science.html#super-properties-object)
 		"""
 		return imports.SuperProperties(self.s, build_num, self.log).get_super_properties(user_agent, locale) #self.locale
 
@@ -237,8 +234,7 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
 		return imports.Other(self.s, self.fosscord, self.log).get_gateway_url()
 
@@ -247,8 +243,7 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
 		return imports.Other(self.s, self.fosscord, self.log).get_detectables()
 
@@ -257,8 +252,7 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
 		return imports.Other(self.s, self.fosscord, self.log).get_oauth2_tokens()
 
@@ -275,10 +269,9 @@ class Client:
 		
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).create_dm(recipients)
+		return imports.Channels(self.fosscord, self.s, self.log).create_dm(recipients)
 
 	def delete_channel(self, channel_id):
 		"""delete a channel, thread, or dm
@@ -290,10 +283,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).delete_channel(channel_id)
+		return imports.Channels(self.fosscord, self.s, self.log).delete_channel(channel_id)
 
 	def remove_from_dm_group(self, channel_id, user_id):
 		"""remove a user from a dm group
@@ -305,10 +297,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).remove_from_dm_group(channel_id, user_id)
+		return imports.Channels(self.fosscord, self.s, self.log).remove_from_dm_group(channel_id, user_id)
 
 	def add_to_dm_group(self, channel_id, user_id):
 		"""add user to dm group
@@ -320,10 +311,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).add_to_dm_group(channel_id, user_id)
+		return imports.Channels(self.fosscord, self.s, self.log).add_to_dm_group(channel_id, user_id)
 
 	def create_dm_group_invite(self, channel_id, max_age_seconds=86400):
 		"""add user to dm group
@@ -336,10 +326,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).create_dm_group_invite(channel_id, max_age_seconds)
+		return imports.Channels(self.fosscord, self.s, self.log).create_dm_group_invite(channel_id, max_age_seconds)
 
 	def set_dm_group_name(self, channel_id, name):
 		"""set the name of a dm group
@@ -351,10 +340,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).set_dm_group_name(channel_id, name)
+		return imports.Channels(self.fosscord, self.s, self.log).set_dm_group_name(channel_id, name)
 
 	def set_dm_group_icon(self, channel_id, image_path):
 		"""set the icon of a dm group
@@ -366,12 +354,11 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).set_dm_group_icon(channel_id, image_path)
+		return imports.Channels(self.fosscord, self.s, self.log).set_dm_group_icon(channel_id, image_path)
 
-	def get_messages(self,channel_id,num=1,before_date=None,around_message=None): # num <= 100, before_date is a snowflake
+	def get_messages(self, channel_id, num=1, before_date=None, around_message=None):
 		"""get past messages in a channel
 
 		Parameters
@@ -382,16 +369,15 @@ class Client:
 		before_date : str (optional)
 			fosscord snowflake
 		around_message : str (optional)
-			message id string. Doesn't work yet in Fosscord...
+			message id string. Doesn't work yet in fosscord...
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).get_messages(channel_id, num, before_date, around_message)
+		return imports.Channels(self.fosscord, self.s, self.log).get_messages(channel_id, num, before_date, around_message)
 
-	def send_message(self, channel_id, message="", nonce="calculate", tts=False, embed=None, reply_to=None, allowed_mentions=None, sticker_ids=None, file=None, is_url=False):
+	def send_message(self, channel_id, message='', nonce='calculate', tts=False, embed=None, reply_to=None, allowed_mentions=None, sticker_ids=None, file=None, is_url=False):
 		"""send message to channel/DM/thread
 
 		Parameters
@@ -405,9 +391,9 @@ class Client:
 		embed : dict (optional)
 			can be constructed using fossbotpy.utils.embed.Embedder
 		reply_to : list (optional)
-			message (in a guild) that is being replied to. Format is ["guild id", "channel id", "message id"].
+			message (in a guild) that is being replied to. Format is ['guild id', 'channel id', 'message id'].
 		allowed_mentions : dict (optional)
-			who to ping when replying or mentioning others. Format is {"parse":["users","roles","everyone"],"replied_user":False}
+			who to ping when replying or mentioning others. Format is {'parse':['users','roles','everyone'],'replied_user':False}
 		sticker_ids : list (optional)
 			list of sticker id strings
 		file : str (optional)
@@ -417,15 +403,14 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
 		if reply_to != None:
-			reply_to = {"guild_id":reply_to[0], "channel_id":reply_to[1], "message_id":reply_to[2]}
+			reply_to = {'guild_id':reply_to[0], 'channel_id':reply_to[1], 'message_id':reply_to[2]}
 		if file == None:
-			return imports.Messages(self.fosscord, self.s, self.log).send_message(channel_id, message, nonce, tts, embed, reply_to, allowed_mentions, sticker_ids)
+			return imports.Channels(self.fosscord, self.s, self.log).send_message(channel_id, message, nonce, tts, embed, reply_to, allowed_mentions, sticker_ids)
 		else:
-			return imports.Messages(self.fosscord, self.s, self.log).send_file(channel_id, file, is_url, message, tts, embed, reply_to, sticker_ids)
+			return imports.Channels(self.fosscord, self.s, self.log).send_file(channel_id, file, is_url, message, tts, embed, reply_to, sticker_ids)
 
 	def typing_action(self, channel_id):
 		"""send typing indicator for 10 seconds
@@ -436,10 +421,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).typing_action(channel_id)
+		return imports.Channels(self.fosscord, self.s, self.log).typing_action(channel_id)
 
 	def delete_message(self, channel_id, message_id):
 		"""delete a message
@@ -451,10 +435,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).delete_message(channel_id, message_id)
+		return imports.Channels(self.fosscord, self.s, self.log).delete_message(channel_id, message_id)
 
 	def edit_message(self, channel_id, message_id, new_message):
 		"""delete a message
@@ -467,10 +450,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).edit_message(channel_id, message_id, new_message)
+		return imports.Channels(self.fosscord, self.s, self.log).edit_message(channel_id, message_id, new_message)
 
 	def pin_message(self, channel_id, message_id):
 		"""pin a message
@@ -482,10 +464,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).pin_message(channel_id, message_id)
+		return imports.Channels(self.fosscord, self.s, self.log).pin_message(channel_id, message_id)
 
 	def unpin_message(self, channel_id, message_id):
 		"""unpin a pinned message
@@ -497,10 +478,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).unpin_message(channel_id, message_id)
+		return imports.Channels(self.fosscord, self.s, self.log).unpin_message(channel_id, message_id)
 
 	def get_pins(self, channel_id):
 		"""get a channel's pinned messages
@@ -511,10 +491,9 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).get_pins(channel_id)
+		return imports.Channels(self.fosscord, self.s, self.log).get_pins(channel_id)
 
 	def add_reaction(self, channel_id, message_id, emoji):
 		"""add a reaction to a message
@@ -528,13 +507,12 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).add_reaction(channel_id, message_id, emoji)
+		return imports.Channels(self.fosscord, self.s, self.log).add_reaction(channel_id, message_id, emoji)
 
-	def remove_reaction(self, channel_id, message_id, emoji):
-		"""remove a reaction from a message
+	def remove_my_reaction(self, channel_id, message_id, emoji):
+		"""remove my reaction from a message
 
 		Parameters
 		----------
@@ -545,65 +523,236 @@ class Client:
 
 		Returns
 		-------
-		requests.Response object
-			https://www.w3schools.com/python/ref_requests_response.asp
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Messages(self.fosscord, self.s, self.log).remove_reaction(channel_id, message_id, emoji)
+		return imports.Channels(self.fosscord, self.s, self.log).remove_my_reaction(channel_id, message_id, emoji)
 
-	#acknowledge message (mark message read)
-	def ack_message(self,channel_id,message_id,ack_token=None):
-		return imports.Messages(self.fosscord, self.s, self.log).ack_message(channel_id,message_id,ack_token)
+	def remove_reaction(self, channel_id, message_id, emoji):
+		"""remove a certain reaction from a message (ex: remove all thumbs up reactions from a message)
 
-	#unacknowledge message (mark message unread)
-	def un_ack_message(self,channel_id,message_id,num_mentions=0):
-		return imports.Messages(self.fosscord, self.s, self.log).un_ack_message(channel_id,message_id,num_mentions)
+		Parameters
+		----------
+		channel_id : str
+		message_id : str
+		emoji : str
+			if using a custom emoji, format is 'name:id'. For example: 'test:897982116313210027'
 
-	def bulk_ack(self, data):
-		return imports.Messages(self.fosscord, self.s, self.log).bulk_ack(data)
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		return imports.Channels(self.fosscord, self.s, self.log).remove_reaction(channel_id, message_id, emoji)
 
-	def get_trending_gifs(self, provider="tenor", locale="en-US", media_format="mp4"):
-		return imports.Messages(self.fosscord, self.s, self.log).get_trending_gifs(provider, locale, media_format)
+	def clear_reactions(self, channel_id, message_id):
+		"""clear all reactions from message
+
+		Parameters
+		----------
+		channel_id : str
+		message_id : str
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		return imports.Channels(self.fosscord, self.s, self.log).clear_reactions(channel_id, message_id)
+
+	def get_reactions(self, channel_id, message_id, emoji, limit=100):
+		"""get a message's reactions
+
+		Parameters
+		----------
+		channel_id : str
+		message_id : str
+		emoji : str
+			if using a custom emoji, format is 'name:id'. For example: 'test:897982116313210027'
+		limit : int (optional)
+			defaults to 100
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		return imports.Channels(self.fosscord, self.s, self.log).get_reactions(channel_id, message_id, emoji, limit)
+
+	def ack_message(self, channel_id, message_id, ack_token=None):
+		"""mark a message as read (acknowledge message)
+
+		Parameters
+		----------
+		channel_id : str
+		message_id : str
+		ack_token : str (optional)
+			this is useless in fosscord
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		return imports.Channels(self.fosscord, self.s, self.log).ack_message(channel_id,message_id,ack_token)
+
+	def unack_message(self, channel_id, message_id, num_mentions=0):
+		"""mark a message as unread (unacknowledge message)
+
+		Parameters
+		----------
+		channel_id : str
+		message_id : str
+		num_mentions : int (optional)
+			number of mentions to show up in your client
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		return imports.Channels(self.fosscord, self.s, self.log).un_ack_message(channel_id, message_id, num_mentions)
+
+	def get_trending_gifs(self, provider='tenor', locale='default', media_format='mp4'):
+		"""fetch trending gifs
+
+		Parameters
+		----------
+		provider : str (optional)
+			turns out it doesn't matter what you set this to, fosscord will just use tenor
+		locale : str (optional)
+			defaults to whatever you set locale to when you initialized the client (which is, by default, 'en-US')
+		media_format : str (optional)
+			defaults to 'mp4'
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		if locale == 'default':
+			locale = self.locale
+		return imports.Channels(self.fosscord, self.s, self.log).get_trending_gifs(provider, locale, media_format)
 
 	'''
 	Stickers
 	'''
-	def get_stickers(self, directory_id="758482250722574376", store_listings=False, locale="en-US"):
-		return imports.Stickers(self.fosscord, self.s, self.log).get_stickers(directory_id, store_listings, locale)
+	def get_stickers(self, country_code='default', locale='default'):
+		"""fetch stickers
 
-	def get_sticker_file(self, sticker_id, sticker_asset): #this is an animated png
-		return imports.Stickers(self.fosscord, self.s, self.log).get_sticker_file(sticker_id, sticker_asset)
+		Parameters
+		----------
+		country_code : str (optional)
+			example: US
+		locale : str (optional)
+			defaults to whatever you set locale to when you initialized the client (which is, by default, 'en-US')
 
-	def get_sticker_json(self, sticker_id, sticker_asset):
-		return imports.Stickers(self.fosscord, self.s, self.log).get_sticker_json(sticker_id, sticker_asset)
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		if locale == 'default':
+			locale = self.locale
+		if country_code == 'default':
+			country_code = locale.split('-')[-1]
+		return imports.Stickers(self.fosscord, self.s, self.main_url, self.log).get_stickers(directory_id, store_listings, locale)
+
+	def get_sticker_file(self, sticker_id):
+		"""fetch sticker apng data
+		size is always 460x460
+
+		Parameters
+		----------
+		sticker_id : str
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		return imports.Stickers(self.fosscord, self.s, self.main_url, self.log).get_sticker_file(sticker_id, sticker_asset)
 
 	def get_sticker_pack(self, sticker_pack_id):
-		return imports.Stickers(self.fosscord, self.s, self.log).get_sticker_pack(sticker_pack_id)
+		"""fetch sticker pack
+
+		Parameters
+		----------
+		sticker_pack_id : str
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		return imports.Stickers(self.fosscord, self.s, self.main_url, self.log).get_sticker_pack(sticker_pack_id)
 
 	'''
 	User relationships
 	'''
-	#get relationships
 	def get_relationships(self):
+		"""get relationships
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
 		return imports.User(self.fosscord, self.s, self.log).get_relationships()
 
-	#get mutual friends
 	def get_mutual_friends(self, user_id):
+		"""get mutual friends
+
+		Parameters
+		----------
+		user_id : str
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
 		return imports.User(self.fosscord, self.s, self.log).get_mutual_friends(user_id)
 
-	#create outgoing friend request
-	def request_friend(self, user): #you can input a user_id(snowflake) or a user discriminator
+	def request_friend(self, user):
+		"""create outgoing friend request
+
+		Parameters
+		----------
+		user : str
+			'user id' or 'user#discriminator'
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
 		return imports.User(self.fosscord, self.s, self.log).request_friend(user)
 
-	#accept incoming friend request
 	def accept_friend(self, user_id, location="friends"):
+		"""accept incoming friend request
+
+		Parameters
+		----------
+		user_id : str
+		location : str
+			'friends', 'context menu', or 'user profile'. Defaults to 'friends'
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
 		return imports.User(self.fosscord, self.s, self.log).accept_friend(user_id, location)
 
-	#remove friend OR unblock user
 	def remove_relationship(self, user_id, location="context menu"):
+		"""remove friend OR unblock user
+
+		Parameters
+		----------
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
 		return imports.User(self.fosscord, self.s, self.log).remove_relationship(user_id, location)
 
-	#block user
 	def block_user(self, user_id, location="context menu"):
+		"""block user
+
+		Parameters
+		----------
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
 		return imports.User(self.fosscord, self.s, self.log).block_user(user_id, location)
 
 	'''
@@ -958,40 +1107,93 @@ class Client:
 		return imports.Guild(self.fosscord, self.s, self.log).get_guild_activities_config(guild_id)
 
 	'''
-	"Science", aka fosscord's tracking endpoint (https://luna.gitlab.io/fosscord-unofficial-docs/science.html - "fosscord argues that they need to collect the data in the case the User allows the usage of the data later on. Which in [luna's] opinion is complete bullshit. Have a good day.")
+	Science. Basically useless on fosscord.
 	'''
 	def init_science(self):
 		try:
 			#get analytics token
-			response = imports.User(self.fosscord, self.s, self.log).info(with_analytics_token=True)
-			if response.status_code == 401:
+			response = imports.User(self.fosscord, self.s, self.log).info(True)
+			if response.status_code in (400, 401):
 				raise
-			self.user_data = response.json() #this is essentially the connection test. We need it cause we can get important data without connecting to the gateway.
-		except:
-			self.user_data = {"analytics_token": None, "id": "0"} #if token invalid
-		#initialize Science object
-		self.Science = imports.Science(self.fosscord, self.s, self.log, self.user_data.get("analytics_token", ""), self.user_data["id"])
+			resjson = response.json()
+			idcheck = res['id'] #if invalid token, this will error
+			self.user_data = resjson
+		except: #if token invalid
+			self.user_data = {'analytics_token': None, 'id': '0'}
 
-	def science(self, events): #the real prep for science events happens down here, and only once for each client obj
-		if self.Science == "":
+		#initialize Science object
+		analytics_token = self.user_data.get('analytics_token', '')
+		user_id = self.user_data['id']
+		self.Science = imports.Science(self.fosscord, self.s, analytics_token, user_id, self.log)
+
+	def science(self, events=[{}]):
+		"""send some data over to fosscord
+
+		Parameters
+		----------
+		events : list of event dictionaries (optional)
+			defaults to [{}]
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		"""
+		if self.Science == '':
 			self.init_science()
 		return self.Science.science(events)
 
-	def calculate_client_uuid(self, event_num="default", user_id="default", increment=True):
-		if self.Science == "":
+	def calculate_client_uuid(self, event_num='default', user_id='default', increment=True):
+		"""calculate client uuid for science reqs
+
+		Parameters
+		----------
+		event_num : int (optional)
+			defaults to 0
+		user_id : str (optional)
+			defaults to your user id or current discord snowflake (if no user id)
+		increment : bool (optional)
+			client_uuids are sequencial. Defaults to True
+
+		Returns
+		-------
+		client uuid string
+		"""
+		if self.Science == '':
 			self.init_science()
 		return self.Science.UUIDobj.calculate(event_num, user_id, increment)
 
 	def refresh_client_uuid(self, reset_event_num=True):
-		if self.Science == "":
+		"""refresh client uuid
+
+		Parameters
+		----------
+		reset_event_num : bool (optional)
+			set event num to 0. Defaults to True
+
+		Returns
+		-------
+		client uuid string
+		"""
+		if self.Science == '':
 			self.init_science()
 		return self.Science.UUIDobj.refresh(reset_event_num)
 
 	def parse_client_uuid(self, client_uuid):
-		if self.Science == "":
-			self.Science = imports.Science(self.fosscord, self.s, self.log, None, "0", "") #no sequential data needed for parsing
+		"""parse client uuid
+
+		Parameters
+		----------
+		client_uuid : str
+
+		Returns
+		-------
+		dictionary with keys 'user_id', 'random_prefix', 'creation_time', 'event_num'
+		"""
+		if self.Science == '':
+			#no sequential data needed for parsing
+			self.Science = imports.Science(self.fosscord, self.s, None, '0', self.log)
 			result = self.Science.UUIDobj.parse(client_uuid)
-			self.Science = "" #reset
+			self.Science = '' #reset
 			return result
 		else:
 			return self.Science.UUIDobj.parse(client_uuid)

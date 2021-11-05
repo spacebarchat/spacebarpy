@@ -1,22 +1,22 @@
 import filetype
 
-from ..requestsender import Wrapper
-
-from ..logger import LogLevel, Logger
-
 try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
 
+from ..requestsender import Wrapper
+from ..logger import LogLevel, Logger
+
 class Fileparse(object):
 	__slots__ = ['log', 'edited_s']
-	def __init__(self, s, log): #s is the requests session object
+	def __init__(self, s, log):
 		self.log = log
-		self.edited_s = Wrapper.edited_req_session(s, {"remove": ["Authorization", "X-Fingerprint", "X-Super-Properties"]})
+		header_mods = {'remove': ['Authorization', 'X-Fingerprint', 'X-Super-Properties', 'X-Debug-Options']}
+		self.edited_s = Wrapper.edited_req_session(s, header_mods)
 		
 	def parse(self, filelocation, isurl): #returns mimetype and extension if detected
-		fd = b""
+		fd = b''
 		if isurl:
 			result = urlparse(filelocation)
 			if all([result.scheme, result.netloc]): #if a link...

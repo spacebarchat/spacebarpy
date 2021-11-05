@@ -1,27 +1,35 @@
 from ..requestsender import Wrapper
 
 class Stickers(object):
-	__slots__ = ['fosscord', 's', 'log']
-	def __init__(self, fosscord, s, log): #s is the requests session object
+	__slots__ = ['fosscord', 'main_url', 's', 'log']
+	def __init__(self, fosscord, main_url, s, log): #s is the requests session object
 		self.fosscord = fosscord
+		self.main_url = main_url+'/' if not main_url.endswith('/') else main_url
 		self.s = s
+		header_mods = {"remove": ['Authorization', 'X-Super-Properties', 'X-Debug-Options']}
+		self.edited_s = Wrapper.edited_req_session(s, header_mods)
 		self.log = log
 
-	def get_stickers(self, directory_id, store_listings, locale):
-		store_listings = str(store_listings).lower()
-		url = self.fosscord+"sticker-packs/directory-v2/"+directory_id+"?with_store_listings="+store_listings+"&locale="+locale
+	def get_stickers(self, country_code, locale):
+		country_code = store_listings.upper()
+		u = '{}sticker-packs?country_code={}&locale={}'
+		url = u.format(self.fosscord, country_code, locale)
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
-	def get_sticker_file(self, sticker_id, sticker_asset): #this is an apng
-		url = "https://media.fosscordapp.net/stickers/"+sticker_id+"/"+sticker_asset+".png"
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
+	def get_sticker_file(self, sticker_id): #this is an apng
+		u = '{}stickers/{}.png?size=512'
+		url = u.format(self.main_url, sticker_id)
+		return Wrapper.send_request(self.edited_s, 'get', url, log=self.log)
 
-	def get_sticker_json(self, sticker_id, sticker_asset):
-		url = "https://fosscord.com/stickers/"+sticker_id+"/"+sticker_asset+".json"
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
+	#this does not work yet on fosscord
+	def get_sticker_json(self, sticker_id):
+		u = '{}stickers/{}.json'
+		url = u.format(self.main_url, sticker_id)
+		return Wrapper.send_request(self.edited_s, 'get', url, log=self.log)
 
 	def get_sticker_pack(self, sticker_pack_id):
-		url = self.fosscord+"sticker-packs/"+sticker_pack_id
+		u = "{}sticker-packs/{}"
+		url = u.format(self.fosscord, sticker_pack_id)
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
 	
