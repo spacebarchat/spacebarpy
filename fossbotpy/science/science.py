@@ -28,9 +28,8 @@ class Science(object):
 		now = self.get_current_unix_ms()
 		tracking_properties = {'client_track_timestamp': now}
 		if duration == 'random':
-			tracking_properties['client_send_timestamp'] = now+random.randint(40, 1000)
-		else:
-			tracking_properties['client_send_timestamp'] = now+duration
+			duration = random.randint(40, 1000)
+		tracking_properties['client_send_timestamp'] = now + duration
 		tracking_properties['client_uuid'] = self.UUIDobj.calculate('default', 'default', True)
 		return tracking_properties
 

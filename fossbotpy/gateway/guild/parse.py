@@ -6,14 +6,14 @@ class GuildParse(object):
 	@staticmethod
 	def guild_member_list_update(response):
 		memberdata = {
-		    "online_count": response["d"]["online_count"],
-		    "member_count": response["d"]["member_count"],
-		    "id": response["d"]["id"],
-		    "guild_id": response["d"]["guild_id"],
-		    "hoisted_roles": response["d"]["groups"],
-		    "types": [],
-		    "locations": [],
-		    "updates": []
+		    'online_count': response['d']['online_count'],
+		    'member_count': response['d']['member_count'],
+		    'id': response['d']['id'],
+		    'guild_id': response['d']['guild_id'],
+		    'hoisted_roles': response['d']['groups'],
+		    'types': [],
+		    'locations': [],
+		    'updates': []
 		}
 		#now time to look over ops
 		for chunk in response['d']['ops']:
@@ -35,33 +35,33 @@ class GuildParse(object):
 
 	@staticmethod
 	def guild_create(response, my_user_id):
-		guilddata = dict(response["d"])
+		guilddata = dict(response['d'])
 		#take care of position
-		guilddata["my_data"] = response["d"].get("members", [])
-		guilddata["members"] = {} #we dont actually get sent the member list from guild creates. however, this usually contains our position/role in that guild so...still good info
-		guilddata["my_data"] = next((a for a in guilddata["my_data"] if a["user"]["id"]==my_user_id), {})
-		if len(guilddata["my_data"]) == 1:
-			guilddata["my_data"][0].pop("user", None)
-			guilddata["my_data"][0]["user_id"] = my_user_id
+		guilddata['my_data'] = response['d'].get('members', [])
+		guilddata['members'] = {} #we dont actually get sent the member list from guild creates. however, this usually contains our position/role in that guild so...still good info
+		guilddata['my_data'] = next((a for a in guilddata['my_data'] if a['user']['id']==my_user_id), {})
+		if len(guilddata['my_data']) == 1:
+			guilddata['my_data'][0].pop('user', None)
+			guilddata['my_data'][0]['user_id'] = my_user_id
 		#take care of emojis
-		guilddata["emojis"] = {i["id"]:i for i in response["d"]["emojis"]}
+		guilddata['emojis'] = {i['id']:i for i in response['d']['emojis']}
 		#take care of roles
-		guilddata["roles"] = {j["id"]:j for j in response["d"]["roles"]}
+		guilddata['roles'] = {j['id']:j for j in response['d']['roles']}
 		#take care of channels
-		guilddata["channels"] = {k["id"]:dict(k,**{"type":Types.channel_types[k["type"]]}) for k in response["d"]["channels"]}
+		guilddata['channels'] = {k['id']:dict(k,**{'type':Types.channel_types[k['type']]}) for k in response['d']['channels']}
 		return guilddata
 
 	@staticmethod
 	def guild_members_chunk(response):
-		member_chunk_data = {"members":[], "guild_id": response["d"]["guild_id"], "chunk_count":response["d"]["chunk_count"], "chunk_index":response["d"]["chunk_index"]}
-		if "not_found" in response["d"]:
-			member_chunk_data["not_found"] = [str(n) for n in response["d"]["not_found"]] #list of user ids
+		member_chunk_data = {'members':[], 'guild_id': response['d']['guild_id'], 'chunk_count':response['d']['chunk_count'], 'chunk_index':response['d']['chunk_index']}
+		if 'not_found' in response['d']:
+			member_chunk_data['not_found'] = [str(n) for n in response['d']['not_found']] #list of user ids
 		presences = {}
-		if "presences" in response["d"]:
-			presences = {i["user"]["id"]:i for i in response["d"]["presences"]}
-		for user in response["d"]["members"]:
+		if 'presences' in response['d']:
+			presences = {i['user']['id']:i for i in response['d']['presences']}
+		for user in response['d']['members']:
 			complete_data = dict(user) 
-			default_presence = {"user": {"id": user.get("user").get("id")}, "status": "offline", "client_status": {}, "activities": []} #offline status
-			complete_data["presence"] = presences.pop(user.get("user").get("id"), default_presence)
-			member_chunk_data["members"].append(complete_data)
+			default_presence = {'user': {'id': user.get('user').get('id')}, 'status': 'offline', 'client_status': {}, 'activities': []} #offline status
+			complete_data['presence'] = presences.pop(user.get('user').get('id'), default_presence)
+			member_chunk_data['members'].append(complete_data)
 		return member_chunk_data

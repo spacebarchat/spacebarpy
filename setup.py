@@ -52,7 +52,7 @@ except:
 # Load the package's __version__.py module as a dictionary.
 about = {}
 if not VERSION:
-    project_slug = NAME.lower().replace("-", "_").replace(" ", "_")
+    project_slug = NAME.lower().replace('-', '_').replace(' ', '_')
     with open(os.path.join(here, project_slug, '__version__.py')) as f:
         exec(f.read(), about)
 else:
@@ -60,14 +60,14 @@ else:
 
 
 class UploadCommand(Command):
-    """Support setup.py upload."""
+    '''Support setup.py upload.'''
 
     description = 'Build and publish the package.'
     user_options = []
 
     @staticmethod
     def status(s):
-        """Prints things in bold."""
+        '''Prints things in bold.'''
         print('\033[1m{0}\033[0m'.format(s))
 
     def initialize_options(self):
@@ -107,7 +107,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    packages=find_packages(exclude=['tests', '*.tests', '*.tests.*', 'tests.*']),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
 

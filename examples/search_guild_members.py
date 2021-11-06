@@ -7,7 +7,7 @@ bot = fossbotpy.Client(token='token', base_url='https://dev.fosscord.com/api/v9/
 @bot.gateway.command
 def test(resp):
     if resp.event.ready:
-        bot.gateway.query_guild_members(['guild_id'], 'a', limit=100, keep="all")
+        bot.gateway.query_guild_members(['guild_id'], 'a', limit=100, keep='all')
     if resp.event.guild_members_chunk and bot.gateway.finished_guild_search(['guild_id'], 'a'):
         bot.gateway.close()
 
@@ -21,7 +21,7 @@ bot.gateway.clear_commands()
 @bot.gateway.command
 def test(resp):
     if resp.event.ready:
-        bot.gateway.check_guild_members(['guild_id'], ['user_id1', 'user_id2'], keep="all")
+        bot.gateway.check_guild_members(['guild_id'], ['user_id1', 'user_id2'], keep='all')
     if resp.event.guild_members_chunk and bot.gateway.finished_guild_search(['guild_id'], user_ids=['user_id1', 'user_id2']):
         bot.gateway.close()
 
@@ -37,12 +37,12 @@ bot.gateway.clear_commands()
 import time
 import re
 
-allchars = [' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~']
+allchars = [' ', '!', ''', '#', '$', '%', '&', ''', '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~']
 bot.gateway.guild_member_searches = {}
 bot.gateway.reset_members_on_session_reconnect = False #member list brute forcing can take a while
 
 class Queries:
-    q_list = ["!"] #query list
+    q_list = ['!'] #query list
 
 class MemberFetchingScore:
     def __init__(self, per_request_expectation, per_second_expectation):
@@ -53,7 +53,7 @@ class MemberFetchingScore:
         self.completeness = 0
     #percentage of requests returning back expected # of members
     def calculate_effectiveness(self, guild_id):
-        self.effectiveness = 100*(len(bot.gateway.session.guild(guild_id).members)/len(bot.gateway.guild_member_searches[guild_id]["queries"]))/self.per_request_expectation
+        self.effectiveness = 100*(len(bot.gateway.session.guild(guild_id).members)/len(bot.gateway.guild_member_searches[guild_id]['queries']))/self.per_request_expectation
     #percentage of expected members fetched per second
     def calculate_efficiency(self, guild_id, start_time):
         total_time = time.time() - start_time
@@ -69,7 +69,7 @@ s = MemberFetchingScore(100, 100)
 
 def calculate_option(guild_id, action): #action == 'append' or 'replace'
     if action == 'append':
-        last_user_i_ds = bot.gateway.guild_member_searches[guild_id]["queries"][''.join(Queries.q_list)]
+        last_user_i_ds = bot.gateway.guild_member_searches[guild_id]['queries'][''.join(Queries.q_list)]
         data = [bot.gateway.session.guild(guild_id).members[i] for i in bot.gateway.session.guild(guild_id).members if i in last_user_i_ds]
         last_name = sorted(set([re.sub(' +', ' ', j['nick'].lower()) if (j.get('nick') and re.sub(' +', ' ', j.get('nick').lower()).startswith(''.join(Queries.q_list))) else re.sub(' +', ' ', j['username'].lower()) for j in data]))[-1]
         try:
@@ -95,10 +95,10 @@ def find_replaceable_index(guild_id):
 def brute_force_test(resp, guild_id, wait):
     if resp.event.ready:
         s.start_time = time.time()
-        bot.gateway.query_guild_members([guild_id], query=''.join(Queries.q_list), limit=100, keep="all")
+        bot.gateway.query_guild_members([guild_id], query=''.join(Queries.q_list), limit=100, keep='all')
     elif resp.event.guild_members_chunk:
         remove = False
-        if len(bot.gateway.guild_member_searches[guild_id]["queries"][''.join(Queries.q_list)]) == 100: #append
+        if len(bot.gateway.guild_member_searches[guild_id]['queries'][''.join(Queries.q_list)]) == 100: #append
             append_option = calculate_option(guild_id, 'append')
             if append_option:
                 Queries.q_list.append(append_option)
@@ -112,12 +112,12 @@ def brute_force_test(resp, guild_id, wait):
                 remove = True
         if remove: #if no replace options, find first replaceable index & replace it
             if len(Queries.q_list) == 1: #reached end of possibilities
-                bot.gateway.remove_command({"function": brute_force_test, "params":{"guild_id":guild_id, "wait":wait}})
+                bot.gateway.remove_command({'function': brute_force_test, 'params':{'guild_id':guild_id, 'wait':wait}})
                 s.calculate_efficiency(guild_id, s.start_time)
-                print("efficiency: "+repr(s.efficiency)+"%")
+                print('efficiency: '+repr(s.efficiency)+'%')
                 s.calculate_completeness(guild_id)
-                print("completeness: "+repr(s.completeness)+"%")
-                print("score: "+repr(s.get_score()))
+                print('completeness: '+repr(s.completeness)+'%')
+                print('score: '+repr(s.get_score()))
                 bot.gateway.close()
             else:
                 replaceable_ind = find_replaceable_index(guild_id)
@@ -126,22 +126,22 @@ def brute_force_test(resp, guild_id, wait):
                     replace_options = calculate_option(guild_id, 'replace')
                     Queries.q_list[-1] = replace_options[0]
                 else:
-                    bot.gateway.remove_command({"function": brute_force_test, "params":{"guild_id":guild_id, "wait":wait}})
+                    bot.gateway.remove_command({'function': brute_force_test, 'params':{'guild_id':guild_id, 'wait':wait}})
                     s.calculate_efficiency(guild_id, s.start_time)
-                    print("efficiency: "+repr(s.efficiency)+"%")
+                    print('efficiency: '+repr(s.efficiency)+'%')
                     s.calculate_completeness(guild_id)
-                    print("completeness: "+repr(s.completeness)+"%")
-                    print("score: "+repr(s.get_score()))
+                    print('completeness: '+repr(s.completeness)+'%')
+                    print('score: '+repr(s.get_score()))
                     bot.gateway.close()
         if wait: time.sleep(wait)
-        print("next query: "+"".join(Queries.q_list))
-        print("members fetched so far: "+repr(len(bot.gateway.session.guild(guild_id).members)))
+        print('next query: '+''.join(Queries.q_list))
+        print('members fetched so far: '+repr(len(bot.gateway.session.guild(guild_id).members)))
         s.calculate_effectiveness(guild_id)
-        print("effectiveness: "+repr(s.effectiveness)+"%")
-        bot.gateway.query_guild_members([guild_id], query=''.join(Queries.q_list), limit=100, keep="all")
+        print('effectiveness: '+repr(s.effectiveness)+'%')
+        bot.gateway.query_guild_members([guild_id], query=''.join(Queries.q_list), limit=100, keep='all')
 
 
 guild_id = ''
 wait = 1
-bot.gateway.command({"function": brute_force_test, "params":{"guild_id":guild_id, "wait":wait}})
+bot.gateway.command({'function': brute_force_test, 'params':{'guild_id':guild_id, 'wait':wait}})
 bot.gateway.run()

@@ -3,7 +3,7 @@
 #we can pass in the bot object into the close_after_readySupp gateway function.
 import fossbotpy
 
-with open("tokenlist.txt") as f:
+with open('tokenlist.txt') as f:
 	tokenlist = f.read().splitlines()
 
 def close_after_ready(resp, bot):
@@ -17,7 +17,7 @@ for i in range(len(tokenlist)):
 		build_num = clients[0]._Client__super_properties['client_build_number']
 	else:
 		clients.append(fossbotpy.Client(token=tokenlist[i], base_url='https://dev.fosscord.com/api/v9/', build_num=build_num))
-	clients[i].gateway.command({"function":close_after_ready, "params":{"bot":clients[i]}}) #add close_after_ready to each bot
+	clients[i].gateway.command({'function':close_after_ready, 'params':{'bot':clients[i]}}) #add close_after_ready to each bot
 
 #now for the fun part
 #we use threading to make it run fast. You can use multiprocessing or subprocess if you'd like to instead. This is just one implementation.

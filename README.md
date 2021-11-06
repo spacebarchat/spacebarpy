@@ -31,10 +31,10 @@ A simple, easy to use, non-restrictive, synchronous Fosscord API Wrapper for Sel
 Python 2.7 or higher required
 ```
 # Linux/macOS
-python3 -m pip install -U fossbotpy
+python -m pip install -U fossbotpy
 
 # Windows
-py -3 -m pip install -U fossbotpy
+py -m pip install -U fossbotpy
 ```
 
 #### libs used
@@ -56,15 +56,15 @@ Please see the [contribution guidelines](contributing.md)
 import fossbotpy
 token = 'token'
 base_url = 'https://dev.fosscord.com/api/v9/'
-bot = fossbotpy.Client(token=token, base_url=base_url, log={"console":True, "file":False})
+bot = fossbotpy.Client(token=token, base_url=base_url, log={'console':True, 'file':False})
 
-bot.send_message("238323948859439", "Hello :)")
+bot.send_message('238323948859439', 'Hello :)')
 
 @bot.gateway.command
 def helloworld(resp):
     if resp.event.ready:
         user = bot.gateway.session.user
-        print("Logged in as {}#{}".format(user['username'], user['discriminator']))
+        print('Logged in as {}#{}'.format(user['username'], user['discriminator']))
     if resp.event.message:
         m = resp.parsed.auto()
         guild_id = m.get('guild_id') #dms do not have a guild_id
@@ -72,7 +72,7 @@ def helloworld(resp):
         username = m['author']['username']
         discriminator = m['author']['discriminator']
         content = m['content']
-        print("> guild {} channel {} | {}#{}: {}".format(guild_id, channel_id, username, discriminator, content))
+        print('> guild {} channel {} | {}#{}: {}'.format(guild_id, channel_id, username, discriminator, content))
 
 bot.gateway.run()
 ```

@@ -15,6 +15,6 @@ def helloworld(resp):
         username = m['author']['username']
         discriminator = m['author']['discriminator']
         content = m['content']
-        print("> guild {} channel {} | {}#{}: {}".format(guild_id, channel_id, username, discriminator, content))
+        print('> guild {} channel {} | {}#{}: {}'.format(guild_id, channel_id, username, discriminator, content))
 
 bot.gateway.run()

@@ -3,11 +3,11 @@
 from ..importmanager import Imports
 imports = Imports(
 	{
-		"StartParse": "fossbotpy.gateway.start.parse",
-		"GuildParse": "fossbotpy.gateway.guild.parse",
-		"UserParse": "fossbotpy.gateway.user.parse",
-		"MessageParse": "fossbotpy.gateway.messages.parse",
-		"ChannelParse": "fossbotpy.gateway.channels.parse",
+		'StartParse': 'fossbotpy.gateway.start.parse',
+		'GuildParse': 'fossbotpy.gateway.guild.parse',
+		'UserParse': 'fossbotpy.gateway.user.parse',
+		'MessageParse': 'fossbotpy.gateway.messages.parse',
+		'ChannelParse': 'fossbotpy.gateway.channels.parse',
 	}
 )
 
@@ -31,7 +31,7 @@ class Parse(object):
 	def guild_member_list_update(self):
 		return imports.GuildParse().guild_member_list_update(self.response)
 
-	def guild_create(self, my_user_id="0"): #personal user id needed to update personal roles for that guild
+	def guild_create(self, my_user_id='0'): #personal user id needed to update personal roles for that guild
 		return imports.GuildParse().guild_create(self.response, my_user_id)
 
 	def guild_members_chunk(self):
@@ -40,7 +40,7 @@ class Parse(object):
 	def message_create(self):
 		return imports.MessageParse().message_create(self.response)
 
-	def sessions_replace(self, session_id="0"):
+	def sessions_replace(self, session_id='0'):
 		return imports.UserParse().sessions_replace(self.response, session_id)
 
 	def channel_create(self):

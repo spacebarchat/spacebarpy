@@ -42,7 +42,7 @@ class Session:
 
 	@property
 	def guild_ids(self): #only for guilds that you're in
-		return [guild_id for guild_id in self.guilds if "removed" not in self.guilds[guild_id]]
+		return [guild_id for guild_id in self.guilds if 'removed' not in self.guilds[guild_id]]
 
 	def set_guild_data(self, guild_id, guild_data):
 		self.settings_ready['guilds'][guild_id] = guild_data
@@ -394,7 +394,7 @@ class Guild(Session):
 
 	@property
 	def channel_and_category_i_ds(self):
-		return [channel_id for channel_id in self.channels_and_categories if "removed" not in self.channels_and_categories[channel_id]]
+		return [channel_id for channel_id in self.channels_and_categories if 'removed' not in self.channels_and_categories[channel_id]]
 
 	@property
 	def categories(self): #all data about guild categories, can be overwhelming

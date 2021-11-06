@@ -101,7 +101,7 @@ class Client:
 		login_needed = token in ('', None, False) and {email, password}.isdisjoint({'', None, False})
 		if login_needed:
 			login_response = self.login(email, password)
-			self.__user_token = login_response.json().get('token') #update token from "" to actual value
+			self.__user_token = login_response.json().get('token') #update token from '' to actual value
 		self.s.headers.update({'Authorization': self.__user_token}) #update headers
 		#step 7: gateway (object initialization)
 		from .gateway.gateway import GatewayServer
@@ -118,17 +118,17 @@ class Client:
 
 ##########################################################
 
-	'''
+	"""
 	context manager stuff
-	'''
+	"""
 	def __enter__(self):
 		return self
 	def __exit__(self, type, value, traceback):
 		pass #logging out doesn't actually do anything so...
 
-	'''
+	"""
 	test token
-	'''
+	"""
 	def check_token(self, token):
 		"""checks if a token is valid, locked, or invalid
 
@@ -154,9 +154,9 @@ class Client:
 			Logger.log('Invalid token.', None, self.log)
 		return settings_test, info_test
 
-	'''
+	"""
 	start
-	'''
+	"""
 	def register(self, email, password, username=None, invite=None, dob='1970-01-01', gift_code_sku_id=None, captcha=None):
 		"""registers an account
 
@@ -177,6 +177,9 @@ class Client:
 		Returns
 		-------
 		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			{"token": str}
+			```
 		"""
 		return imports.Auth(self.s, self.fosscord, self.log).register(email, password, username, invite, dob, gift_code_sku_id, captcha)
 
@@ -186,7 +189,7 @@ class Client:
 		Parameters
 		----------
 		emailphone : str
-			email or phone number (ex: "+10000000000")
+			email or phone number (ex: '+10000000000')
 		password : str
 		undelete : bool (optional)
 			recover a deleted account
@@ -200,6 +203,44 @@ class Client:
 		Returns
 		-------
 		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			{
+				"token": str,
+				"settings": {
+					"afk_timeout": int,
+					"allow_accessibility_detection": bool,
+					"animate_emoji": bool,
+					"animate_stickers": int,
+					"contact_sync_enabled": bool,
+					"convert_emoticons": bool,
+					"custom_status": dict,
+					"default_guilds_restricted": bool,
+					"detect_platform_accounts": bool,
+					"developer_mode": bool,
+					"disable_games_tab": bool,
+					"enable_tts_command": bool,
+					"explicit_content_filter": int,
+					"friend_source_flags": dict,
+					"gateway_connected": bool,
+					"gif_auto_play": bool,
+					"guild_folders": list,
+					"guild_positions": list,
+					"inline_attachment_media": bool,
+					"inline_embed_media": bool,
+					"locale": str,
+					"message_display_compact": bool,
+					"native_phone_integration_enabled": bool,
+					"render_embeds": bool,
+					"render_reactions": bool,
+					"restricted_guilds": list,
+					"show_current_game": bool,
+					"status": str,
+					"stream_notifications_enabled": bool,
+					"theme": "str",
+					"timezone_offset": int,
+				},
+			}
+			```
 		"""
 		return imports.Auth(self.s, self.fosscord, self.log).login(emailphone, password, undelete, captcha, source, gift_code_sku_id)
 
@@ -235,6 +276,9 @@ class Client:
 		Returns
 		-------
 		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			{"url": str}
+			```
 		"""
 		return imports.Other(self.s, self.fosscord, self.log).get_gateway_url()
 
@@ -256,9 +300,9 @@ class Client:
 		"""
 		return imports.Other(self.s, self.fosscord, self.log).get_oauth2_tokens()
 
-	'''
+	"""
 	Messages
-	'''
+	"""
 	def create_dm(self, recipients):
 		"""create a dm / dm group
 
@@ -270,6 +314,26 @@ class Client:
 		Returns
 		-------
 		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			{
+				"icon": str or None,
+				"id": str,
+				"last_message_id": str or None,
+				"name": str or None,
+				"origin_channel_id": str or None,
+				"owner_id": str or None,
+				"type": 1,
+				"recipients": [
+					{
+						"avatar": str or None,
+						"discriminator": str,
+						"id": str,
+						"public_flags": int,
+						"username": str,
+					}
+				],
+			}
+			```
 		"""
 		return imports.Channels(self.fosscord, self.s, self.log).create_dm(recipients)
 
@@ -572,6 +636,21 @@ class Client:
 		Returns
 		-------
 		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			[
+				{
+					"id": str,
+					"username": str,
+					"discriminator": str,
+					"avatar": str or None,
+					"accent_color": str or None,
+					"banner": str or None,
+					"bot": bool,
+					"bio": str,
+					"public_flags": int,
+				},
+			]
+			```
 		"""
 		return imports.Channels(self.fosscord, self.s, self.log).get_reactions(channel_id, message_id, emoji, limit)
 
@@ -605,7 +684,7 @@ class Client:
 		-------
 		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
-		return imports.Channels(self.fosscord, self.s, self.log).un_ack_message(channel_id, message_id, num_mentions)
+		return imports.Channels(self.fosscord, self.s, self.log).unack_message(channel_id, message_id, num_mentions)
 
 	def get_trending_gifs(self, provider='tenor', locale='default', media_format='mp4'):
 		"""fetch trending gifs
@@ -622,14 +701,36 @@ class Client:
 		Returns
 		-------
 		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			{
+				"categories": [
+					{
+						"name": str,
+						"src": str
+					},
+				],
+				"gifs": [
+					{
+						"id": str,
+						"title": str,
+						"url": str,
+						"src": str,
+						"gif_src": str,
+						"width": int,
+						"height": int,
+						"preview": str
+					},
+				],
+			}
+			```
 		"""
 		if locale == 'default':
 			locale = self.locale
 		return imports.Channels(self.fosscord, self.s, self.log).get_trending_gifs(provider, locale, media_format)
 
-	'''
+	"""
 	Stickers
-	'''
+	"""
 	def get_stickers(self, country_code='default', locale='default'):
 		"""fetch stickers
 
@@ -643,12 +744,15 @@ class Client:
 		Returns
 		-------
 		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			{"sticker_packs": list}
+			```
 		"""
 		if locale == 'default':
 			locale = self.locale
 		if country_code == 'default':
 			country_code = locale.split('-')[-1]
-		return imports.Stickers(self.fosscord, self.s, self.main_url, self.log).get_stickers(directory_id, store_listings, locale)
+		return imports.Stickers(self.fosscord, self.s, self.main_url, self.log).get_stickers(country_code, locale)
 
 	def get_sticker_file(self, sticker_id):
 		"""fetch sticker apng data
@@ -666,6 +770,7 @@ class Client:
 
 	def get_sticker_pack(self, sticker_pack_id):
 		"""fetch sticker pack
+		doesn't work yet but is documented on docs.fosscord.com/api/routes ...
 
 		Parameters
 		----------
@@ -677,30 +782,18 @@ class Client:
 		"""
 		return imports.Stickers(self.fosscord, self.s, self.main_url, self.log).get_sticker_pack(sticker_pack_id)
 
-	'''
+	"""
 	User relationships
-	'''
+	"""
 	def get_relationships(self):
 		"""get relationships
+		returns status code 500...idk
 
 		Returns
 		-------
 		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
 		"""
 		return imports.User(self.fosscord, self.s, self.log).get_relationships()
-
-	def get_mutual_friends(self, user_id):
-		"""get mutual friends
-
-		Parameters
-		----------
-		user_id : str
-
-		Returns
-		-------
-		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
-		"""
-		return imports.User(self.fosscord, self.s, self.log).get_mutual_friends(user_id)
 
 	def request_friend(self, user):
 		"""create outgoing friend request
@@ -716,7 +809,7 @@ class Client:
 		"""
 		return imports.User(self.fosscord, self.s, self.log).request_friend(user)
 
-	def accept_friend(self, user_id, location="friends"):
+	def accept_friend(self, user_id, location='friends'):
 		"""accept incoming friend request
 
 		Parameters
@@ -731,11 +824,14 @@ class Client:
 		"""
 		return imports.User(self.fosscord, self.s, self.log).accept_friend(user_id, location)
 
-	def remove_relationship(self, user_id, location="context menu"):
-		"""remove friend OR unblock user
+	def remove_relationship(self, user_id, location='context menu'):
+		"""remove friend, unblock user, OR reject friend request
 
 		Parameters
 		----------
+		user_id : str
+		location : str
+			'friends', 'context menu', or 'user profile'. Defaults to 'context menu'
 
 		Returns
 		-------
@@ -743,11 +839,14 @@ class Client:
 		"""
 		return imports.User(self.fosscord, self.s, self.log).remove_relationship(user_id, location)
 
-	def block_user(self, user_id, location="context menu"):
+	def block_user(self, user_id, location='context menu'):
 		"""block user
 
 		Parameters
 		----------
+		user_id : str
+		location : str
+			'friends', 'context menu', or 'user profile'. Defaults to 'context menu'
 
 		Returns
 		-------
@@ -755,19 +854,100 @@ class Client:
 		"""
 		return imports.User(self.fosscord, self.s, self.log).block_user(user_id, location)
 
-	'''
+	"""
 	Other user stuff
-	'''
+	"""
 	def get_profile(self, user_id, with_mutual_guilds=True):
+		"""get a user's profile
+
+		Parameters
+		----------
+		user_id : str
+		with_mutual_guilds : bool (optional)
+			fetch data about mutual guilds. Defaults to True
+			this parameter does not work on fosscord yet
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+		```json
+		{
+			"connected_accounts": [],
+			"premium_guild_since": str ('yyyy-mm-ddThh:mm:ss.SSSSSS+ZZ:ZZ') or None,
+			"premium_since": str ('yyyy-mm-ddThh:mm:ss.SSSSSS+ZZ:ZZ') or None,
+			"mutual_guilds": list,
+			"user": {
+				"username": str,
+				"discriminator": str,
+				"id": str,
+				"public_flags": int,
+				"avatar": str or None,
+				"accent_color": str or None,
+				"banner": str or None,
+				"bio": str,
+				"bot": bool,
+			}
+		}
+		```
+		"""
 		return imports.User(self.fosscord, self.s, self.log).get_profile(user_id, with_mutual_guilds)
 
-	def info(self, with_analytics_token=None):
+	def info(self):
+		"""get bot info
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			{
+				"id": str,
+				"username": str,
+				"discriminator": str,
+				"avatar": str or None,
+				"accent_color": str or None,
+				"banner": str or None,
+				"phone": str or None,
+				"premium": bool,
+				"premium_type": int,
+				"bot": bool,
+				"bio": str,
+				"nsfw_allowed": bool,
+				"mfa_enabled": bool,
+				"verified": bool,
+				"disabled": bool,
+				"email": str,
+				"flags": str,
+				"public_flags": int,
+				"settings": dict
+			}
+			```
+		"""
 		return imports.User(self.fosscord, self.s, self.log).info(with_analytics_token)
 
 	def get_user_affinities(self):
+		"""get user affinities
+		idk
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			{"user_affinities": list, "inverse_user_affinities": list}
+			```
+		"""
 		return imports.User(self.fosscord, self.s, self.log).get_user_affinities()
 
 	def get_guild_affinities(self):
+		"""get guild affinities
+		idk
+
+		Returns
+		-------
+		[requests.Response object](https://www.w3schools.com/python/ref_requests_response.asp)
+			```json
+			{"guild_affinities": list}
+			```
+		"""
 		return imports.User(self.fosscord, self.s, self.log).get_guild_affinities()
 
 	def get_mentions(self, limit=25, role_mentions=True, everyone_mentions=True):
@@ -779,21 +959,15 @@ class Client:
 	def get_my_stickers(self):
 		return imports.User(self.fosscord, self.s, self.log).get_my_stickers()
 
-	def get_notes(self, user_id):
-		return imports.User(self.fosscord, self.s, self.log).get_notes(user_id)
-
-	def set_user_note(self, user_id, note):
-		return imports.User(self.fosscord, self.s, self.log).set_user_note(user_id, note)
-
-	def get_rt_cregions(self):
+	def get_rtc_regions(self):
 		return imports.User(self.fosscord, self.s, self.log).get_rt_cregions()
 
 	def get_voice_regions(self):
 		return imports.User(self.fosscord, self.s, self.log).get_voice_regions()
 
-	'''
+	"""
 	Profile edits
-	'''
+	"""
 	# set avatar
 	def set_avatar(self,image_path):
 		return imports.User(self.fosscord, self.s, self.log).set_avatar(image_path)
@@ -828,16 +1002,16 @@ class Client:
 	def delete_account(self, password):
 		return imports.User(self.fosscord, self.s, self.log).delete_account(password)
 
-	'''
+	"""
 	User Settings, continued
-	'''
+	"""
 	def set_d_mscan_lvl(self, level=1): # 0<=level<=2
 		return imports.User(self.fosscord, self.s, self.log).set_d_mscan_lvl(level)
 
 	def allow_d_ms_from_server_members(self, allow=True, disallowed_guild_i_ds=None):
 		return imports.User(self.fosscord, self.s, self.log).allow_d_ms_from_server_members(allow, disallowed_guild_i_ds)
 
-	def allow_friend_requests_from(self, types=["everyone", "mutual_friends", "mutual_guilds"]):
+	def allow_friend_requests_from(self, types=['everyone', 'mutual_friends', 'mutual_guilds']):
 		return imports.User(self.fosscord, self.s, self.log).allow_friend_requests_from(types)
 
 	def analytics_consent(self, grant=[], revoke=[]):
@@ -876,10 +1050,10 @@ class Client:
 	def get_stripe_client_secret(self):
 		return imports.User(self.fosscord, self.s, self.log).get_stripe_client_secret()
 
-	def set_theme(self, theme): #"light" or "dark"
+	def set_theme(self, theme): #'light' or 'dark'
 		return imports.User(self.fosscord, self.s, self.log).set_theme(theme)
 
-	def set_message_display(self, CozyOrCompact): #"cozy" or "compact"
+	def set_message_display(self, CozyOrCompact): #'cozy' or 'compact'
 		return imports.User(self.fosscord, self.s, self.log).set_message_display(CozyOrCompact)
 
 	def enable_gif_auto_play(self, enable=True): #boolean, default=True
@@ -888,7 +1062,7 @@ class Client:
 	def enable_animated_emoji(self, enable=True): #boolean, default=True
 		return imports.User(self.fosscord, self.s, self.log).enable_animated_emoji(enable)
 
-	def set_sticker_animation(self, setting): #string, default="always"
+	def set_sticker_animation(self, setting): #string, default='always'
 		return imports.User(self.fosscord, self.s, self.log).set_sticker_animation(setting)
 
 	def enable_tts(self, enable=True): #boolean, default=True
@@ -915,8 +1089,8 @@ class Client:
 	def set_locale(self, locale):
 		response = imports.User(self.fosscord, self.s, self.log).set_locale(locale)
 		self.locale = locale
-		self.s.headers["Accept-Language"] = self.locale
-		self.s.cookies["locale"] = self.locale
+		self.s.headers['Accept-Language'] = self.locale
+		self.s.cookies['locale'] = self.locale
 		return response
 
 	def enable_dev_mode(self, enable=True): #boolean
@@ -970,7 +1144,7 @@ class Client:
 	def get_report_menu(self):
 		return imports.User(self.fosscord, self.s, self.log).get_report_menu()
 
-	def report_spam(self, channel_id, message_id, report_type="first_dm", guild_id=None, version="1.0", variant="1", language="en"):
+	def report_spam(self, channel_id, message_id, report_type='first_dm', guild_id=None, version='1.0', variant='1', language='en'):
 		return imports.User(self.fosscord, self.s, self.log).report_spam(channel_id, message_id, report_type, guild_id, version, variant, language)
 
 	def get_handoff_token(self, key):
@@ -985,15 +1159,15 @@ class Client:
 	def logout(self, provider=None, voip_provider=None):
 		return imports.User(self.fosscord, self.s, self.log).logout(provider, voip_provider)
 
-	'''
+	"""
 	Guild/Server stuff
-	'''
+	"""
 	#get guild info from invite code
 	def get_info_from_invite_code(self,invite_code, with_counts=True, with_expiration=True, from_join_guild_nav=False):
 		return imports.Guild(self.fosscord, self.s, self.log).get_info_from_invite_code(invite_code, with_counts, with_expiration, from_join_guild_nav)
 
 	#join guild with invite code
-	def join_guild(self, invite_code, location="accept invite page", wait=0):
+	def join_guild(self, invite_code, location='accept invite page', wait=0):
 		return imports.Guild(self.fosscord, self.s, self.log).join_guild(invite_code, location, wait)
 
 	#preview/lurk-join guild. Only applies to current (gateway) session
@@ -1005,7 +1179,7 @@ class Client:
 		return imports.Guild(self.fosscord, self.s, self.log).leave_guild(guild_id, lurking)
 
 	#create invite
-	def create_invite(self, channel_id, max_age_seconds=False, max_uses=False, grant_temp_membership=False, check_invite="", target_type=""):
+	def create_invite(self, channel_id, max_age_seconds=False, max_uses=False, grant_temp_membership=False, check_invite='', target_type=''):
 		return imports.Guild(self.fosscord, self.s, self.log).create_invite(channel_id, max_age_seconds, max_uses, grant_temp_membership, check_invite, target_type)
 
 	def delete_invite(self, invite_code):
@@ -1033,7 +1207,7 @@ class Client:
 		return imports.Guild(self.fosscord, self.s, self.log).get_guild_regions(guild_id)
 
 	#create a guild
-	def create_guild(self, name, icon=None, channels=[], system_channel_id=None, template="2TffvPucqHkN"):
+	def create_guild(self, name, icon=None, channels=[], system_channel_id=None, template='2TffvPucqHkN'):
 		return imports.Guild(self.fosscord, self.s, self.log).create_guild(name, icon, channels, system_channel_id, template)
 
 	#delete a guild
@@ -1041,11 +1215,11 @@ class Client:
 		return imports.Guild(self.fosscord, self.s, self.log).delete_guild(guild_id)
 
 	#kick a user
-	def kick(self,guild_id,user_id,reason=""):
+	def kick(self,guild_id,user_id,reason=''):
 		return imports.Guild(self.fosscord, self.s, self.log).kick(guild_id,user_id,reason)
 
 	#ban a user
-	def ban(self,guild_id,user_id,delete_messagesDays=0,reason=""):
+	def ban(self,guild_id,user_id,delete_messagesDays=0,reason=''):
 		return imports.Guild(self.fosscord, self.s, self.log).ban(guild_id,user_id,delete_messagesDays,reason)
 
 	#unban a user
@@ -1079,16 +1253,16 @@ class Client:
 	def get_member_verification_data(self, guild_id, with_guild=False, invite_code=None):
 		return imports.Guild(self.fosscord, self.s, self.log).get_member_verification_data(guild_id, with_guild, invite_code)
 
-	def agree_guild_rules(self, guild_id, form_fields, version="2021-01-05T01:44:32.163000+00:00"):
+	def agree_guild_rules(self, guild_id, form_fields, version='2021-01-05T01:44:32.163000+00:00'):
 		return imports.Guild(self.fosscord, self.s, self.log).agree_guild_rules(guild_id, form_fields, version)
 
 	def create_thread(self, channel_id, name, message_id=None, public=True, archive_after='24 hours'):
 		return imports.Guild(self.fosscord, self.s, self.log).create_thread(channel_id, name, message_id, public, archive_after)
 
-	def leave_thread(self, thread_id, location="Sidebar Overflow"):
+	def leave_thread(self, thread_id, location='Sidebar Overflow'):
 		return imports.Guild(self.fosscord, self.s, self.log).leave_thread(thread_id, location)
 
-	def join_thread(self, thread_id, location="Banner"):
+	def join_thread(self, thread_id, location='Banner'):
 		return imports.Guild(self.fosscord, self.s, self.log).join_thread(thread_id, location)
 
 	def archive_thread(self, thread_id, lock=True):
@@ -1106,9 +1280,9 @@ class Client:
 	def get_guild_activities_config(self, guild_id):
 		return imports.Guild(self.fosscord, self.s, self.log).get_guild_activities_config(guild_id)
 
-	'''
+	"""
 	Science. Basically useless on fosscord.
-	'''
+	"""
 	def init_science(self):
 		try:
 			#get analytics token

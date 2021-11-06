@@ -5,7 +5,7 @@ bot = fossbotpy.Client(token='token', base_url='https://dev.fosscord.com/api/v9/
 def helloworld1(resp):
     if resp.event.ready:
         user = bot.gateway.session.user
-        print("Logged in as {}#{}".format(user['username'], user['discriminator']))
+        print('Logged in as {}#{}'.format(user['username'], user['discriminator']))
 
 @bot.gateway.command
 def helloworld2(resp):
