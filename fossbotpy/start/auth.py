@@ -1,6 +1,8 @@
+import time
+import random
+
 from ..requestsender import Wrapper
 from ..utils.contextproperties import ContextProperties
-import time
 
 from ..logger import Logger
 
@@ -14,8 +16,45 @@ class Auth:
 		self.log = log
 		self.edited_s = Wrapper.edited_req_session(s, {'remove': ['Authorization']})
 
+	#username choices from dev.fosscord.com source
+	def random_username(self):
+		prefix = [
+			"mysterious",
+			"adventurous",
+			"courageous",
+			"precious",
+			"cynical",
+			"despicable",
+			"suspicious",
+			"gorgeous",
+			"lovely",
+			"stunning",
+			"based",
+			"keyed",
+			"ratioed",
+			"twink",
+			"phoned"
+		]
+		suffix = [
+			"Anonymous",
+			"Lurker",
+			"User",
+			"Enjoyer",
+			"Hunk",
+			"Top",
+			"Bottom",
+			"Sub",
+			"Coolstar",
+			"Wrestling",
+			"TylerTheCreator",
+			"Ad"
+		]
+		return '{}{}'.format(random.choice(prefix), random.choice(suffix))
+
 	def register(self, email, username, password, invite, dob, gift_code_sku_id, captcha):
 		url = self.fosscord + 'auth/register'
+		if not username and not email:
+			username = self.random_username()
 		body = {
 			'email': email,
 			'username': username,

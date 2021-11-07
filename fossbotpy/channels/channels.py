@@ -99,15 +99,6 @@ class Channels(object):
 			res._content = '[]'
 		return res
 
-	#greet with stickers
-	def greet(self, channel_id, sticker_ids):
-		u = '{}channels/{}/greet'
-		url = u.format(self.fosscord, channel_id)
-		if isinstance(sticker_ids, str):
-			sticker_ids = [sticker_ids]
-		body = {'sticker_ids': sticker_ids}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
 	#text message
 	def send_message(self, channel_id, message, nonce, tts, embed, message_reference, allowed_mentions, sticker_ids):
 		u = '{}channels/{}/messages'
@@ -169,94 +160,6 @@ class Channels(object):
 
 		header_mods = {'update':{'Content-Type':m.content_type}}
 		return Wrapper.send_request(self.s, 'post', url, body=m, header_modifications=header_mods, log=self.log)
-
-	#doesn't work yet on fosscord
-	def search_messages(self, guild_id, channel_id, author_id, author_type, mentions_user_id, has, link_hostname, embed_provider, embed_type, attachment_extension, attachment_filename, mentions_everyone, include_nsfw, after_date, before_date, text_search, after_num_results, limit): #classic fosscord search function, results with key 'hit' are the results you searched for, after_num_results (aka offset) is multiples of 25 and indicates after which messages (type int), filterResults defaults to False
-		if guild_id:
-			url = self.fosscord+'guilds/'+guild_id+'/messages/search?'
-		else:
-			if isinstance(channel_id, str):
-				url = self.fosscord+'channels/{}/messages/search?'.format(channel_id)
-			else:
-				url = self.fosscord+'channels/{}/messages/search?'.format(channel_id[0])
-		allqueryparams = []
-		if channel_id:
-			if isinstance(channel_id, str):
-				channel_id = [channel_id]
-			for i in channel_id:
-				allqueryparams.append(('channel_id', str(i)))
-		if author_id:
-			if isinstance(author_id, str):
-				author_id = [author_id]
-			for i in author_id:
-				allqueryparams.append(('author_id', str(i)))
-		if author_type:
-			if isinstance(author_type, str):
-				author_type = [author_type]
-			for i in author_type:
-				allqueryparams.append(('author_type', str(i)))
-		if mentions_user_id:
-			if isinstance(mentions_user_id, str):
-				mentions_user_id = [mentions_user_id]
-			for i in mentions_user_id:
-				allqueryparams.append(('mentions', str(i)))
-		if has:
-			if isinstance(has, str):
-				has = [has]
-			for i in has:
-				allqueryparams.append(('has', str(i)))
-		if link_hostname:
-			if isinstance(link_hostname, str):
-				link_hostname = [link_hostname]
-			for i in link_hostname:
-				allqueryparams.append(('link_hostname', str(i)))
-		if embed_provider:
-			if isinstance(embed_provider, str):
-				embed_provider = [embed_provider]
-			for i in embed_provider:
-				allqueryparams.append(('embed_provider', str(i)))
-		if embed_type:
-			if isinstance(embed_type, str):
-				embed_type = [embed_type]
-			for i in embed_type:
-				allqueryparams.append(('embed_type', str(i)))
-		if attachment_extension:
-			if isinstance(attachment_extension, str):
-				attachment_extension = [attachment_extension]
-			for i in attachment_extension:
-				allqueryparams.append(('attachment_extension', str(i)))
-		if attachment_filename:
-			if isinstance(attachment_filename, str):
-				attachment_filename = [attachment_filename]
-			for i in attachment_filename:
-				allqueryparams.append(('attachment_filename', str(i)))
-		if mentions_everyone:
-			allqueryparams.append(('mention_everyone', repr(mentions_everyone).lower()))
-		if before_date:
-			allqueryparams.append(('max_id', str(before_date)))
-		if after_date:
-			allqueryparams.append(('min_id', str(after_date)))
-		if text_search:
-			allqueryparams.append(('content', str(text_search)))
-		if include_nsfw:
-			allqueryparams.append(('include_nsfw', True))
-		if after_num_results:
-			allqueryparams.append(('offset', str(after_num_results)))
-		if limit!=None:
-			allqueryparams.append(('limit', str(limit)))
-		querystring = urlencode(allqueryparams)
-		url += querystring
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	#doesnt work yet on fosscord because searching messages hasn't been implented into the api
-	def filter_search_results(self, search_response): #only input is the requests response object outputted from search_messages, returns type list
-		jsonresponse = search_response.json()['messages']
-		filtered_messages = []
-		for group in jsonresponse:
-			for result in group:
-				if 'hit' in result:
-					filtered_messages.append(result)
-		return filtered_messages
 
 	def typing_action(self, channel_id): #sends the typing action for 10 seconds (or until you change the page)
 		u = '{}channels/{}/typing'
@@ -330,13 +233,6 @@ class Channels(object):
 		u = '{}channels/{}/messages/{}/ack'
 		url = u.format(self.fosscord, channel_id, message_id)
 		body = {'manual': True, 'mention_count': num_mentions}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	#doesnt work yet in fosscord
-	def bulk_ack(self, data):
-		u = '{}read-states/ack-bulk'
-		url = u.format(self.fosscord)
-		body = {'read_states': data}
 		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
 
 	def get_trending_gifs(self, provider, locale, media_format):

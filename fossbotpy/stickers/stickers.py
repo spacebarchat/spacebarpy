@@ -21,12 +21,6 @@ class Stickers(object):
 		url = u.format(self.main_url, sticker_id)
 		return Wrapper.send_request(self.edited_s, 'get', url, log=self.log)
 
-	#this does not work yet on fosscord
-	def get_sticker_json(self, sticker_id):
-		u = '{}stickers/{}.json'
-		url = u.format(self.main_url, sticker_id)
-		return Wrapper.send_request(self.edited_s, 'get', url, log=self.log)
-
 	def get_sticker_pack(self, sticker_pack_id):
 		u = '{}sticker-packs/{}'
 		url = u.format(self.fosscord, sticker_pack_id)

@@ -1,5 +1,6 @@
 import base64
 import datetime
+
 from ..requestsender import Wrapper
 from ..utils.contextproperties import ContextProperties
 from ..utils.color import Color
@@ -7,7 +8,7 @@ from ..utils.snowflake import Snowflake
 
 class User(object):
 	__slots__ = ['fosscord', 's', 'log']
-	def __init__(self, fosscord, s, log): #s is the requests session object
+	def __init__(self, fosscord, s, log):
 		self.fosscord = fosscord
 		self.s = s
 		self.log = log
@@ -63,7 +64,7 @@ class User(object):
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
 	#simple. bot.info() for own user data
-	def info(self, with_analytics_token):
+	def info(self):
 		url = '{}users/@me'.format(self.fosscord)
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
@@ -74,35 +75,6 @@ class User(object):
 	#guild affinities with respect to current user
 	def get_guild_affinities(self):
 		url = '{}users/@me/affinities/guilds'.format(self.fosscord)
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def get_mentions(self, limit, role_mentions, everyone_mentions):
-		role_mentions = str(role_mentions).lower()
-		everyone_mentions = str(everyone_mentions).lower()
-		url = self.fosscord+'users/@me/mentions?limit='+str(limit)+'&roles='+role_mentions+'&everyone='+everyone_mentions
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def remove_mention_from_inbox(self, message_id):
-		url = self.fosscord+'users/@me/mentions/'+message_id
-		return Wrapper.send_request(self.s, 'delete', url, log=self.log)
-
-	def get_my_stickers(self):
-		url = self.fosscord+'users/@me/sticker-packs'
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	#doesnt work yet on fosscord
-	def get_notes(self, user_id):
-		url = self.fosscord+'users/@me/notes/'+user_id
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	#doesnt work yet on fosscord
-	def set_user_note(self, user_id, note):
-		url = self.fosscord+'users/@me/notes/'+user_id
-		body = {'note': note}
-		return Wrapper.send_request(self.s, 'put', url, body, log=self.log)
-
-	def get_rtc_regions(self):
-		url = 'https://latency.fosscord.media/rtc'
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
 	def get_voice_regions(self):
@@ -155,6 +127,10 @@ class User(object):
 	def set_username(self, name, discriminator, password):
 		url = self.fosscord+'users/@me'
 		body = {'username': name, 'password': password, 'discriminator':discriminator}
+		if not name:
+			body.pop('username')
+		if not discriminator:
+			body.pop('discriminator')
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
 	def set_email(self, email, password):
@@ -167,13 +143,11 @@ class User(object):
 		body = {'password': password, 'new_password': new_password}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
-	#as of right now, you need to be in the beta program for this to work
 	def set_about_me(self, bio):
 		url = self.fosscord+'users/@me'
 		body = {'bio': bio}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
-	#as of right now, you need to be in the beta program for this to work
 	def set_banner(self, image_path):
 		url = self.fosscord+'users/@me'
 		with open(image_path, 'rb') as image:
@@ -194,15 +168,15 @@ class User(object):
 	'''
 	Privacy & Safety
 	'''
-	def set_d_mscan_lvl(self, level):
+	def set_dm_scan_lvl(self, level):
 		url = self.fosscord+'users/@me/settings'
 		body = {'explicit_content_filter': int(level)}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
-	def allow_d_ms_from_server_members(self, allow, disallowed_guild_i_ds):
+	def allow_dms_from_guild_members(self, allow, disallowed_guild_ids):
 		url = self.fosscord+'users/@me/settings'
-		body = {'restricted_guilds':disallowed_guild_i_ds, 'default_guilds_restricted':not allow}
-		if not disallowed_guild_i_ds: #if False or None
+		body = {'restricted_guilds':disallowed_guild_ids, 'default_guilds_restricted':not allow}
+		if not disallowed_guild_ids: #if False or None
 			body.pop('restricted_guilds')
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
@@ -218,19 +192,10 @@ class User(object):
 			body['friend_source_flags']['mutual_guilds'] = False
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
-	def analytics_consent(self, grant, revoke): #personalization, usage_statistics
-		url = self.fosscord+'users/@me/consent'
-		body = {'grant':grant,'revoke':revoke}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
 	def allow_screen_reader_tracking(self, allow): #more fosscord tracking stuff
 		url = self.fosscord+'users/@me/settings'
 		body = {'allow_accessibility_detection': allow}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def request_my_data(self):
-		url = self.fosscord+'users/@me/harvest'
-		return Wrapper.send_request(self.s, 'post', url, log=self.log)
 
 	'''
 	Connections
@@ -239,32 +204,10 @@ class User(object):
 		url = self.fosscord+'users/@me/connections'
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
 
-	def get_connection_url(self, account_type):
-		url = self.fosscord+'connections/'+account_type+'/authorize'
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def enable_connection_display_on_profile(self, account_type, account_username, enable):
-		url = self.fosscord+'users/@me/connections/'+account_type+'/'+account_username
-		body = {'visibility': enable}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def enable_connection_display_on_status(self, account_type, account_username, enable):
-		url = self.fosscord+'users/@me/connections/'+account_type+'/'+account_username
-		body = {'show_activity': enable}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def remove_connection(self, account_type, account_username):
-		url = self.fosscord+'users/@me/connections/'+account_type+'/'+account_username
-		return Wrapper.send_request(self.s, 'delete', url, log=self.log)
-
 	# BILLING SETTINGS
 	'''
 	Billing
 	'''
-	def get_billing_history(self, limit):
-		url = self.fosscord+'users/@me/billing/payments?limit='+str(limit)
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
 	def get_payment_sources(self):
 		url = self.fosscord+'users/@me/billing/payment-sources'
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
@@ -272,10 +215,6 @@ class User(object):
 	def get_billing_subscriptions(self):
 		url = self.fosscord+'users/@me/billing/subscriptions'
 		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def get_stripe_client_secret(self): #for adding new payment methods. Stripe api wraps are not included because discum is just a fosscord api wrapper.
-		url = self.fosscord+'users/@me/billing/stripe/setup-intents'
-		return Wrapper.send_request(self.s, 'post', url, log=self.log)
 
 	# APP SETTINGS
 	'''
@@ -286,9 +225,9 @@ class User(object):
 		body = {'theme': theme.lower()}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
-	def set_message_display(self, CozyOrCompact):
+	def set_message_display(self, cozy_or_compact):
 		url = self.fosscord+'users/@me/settings'
-		if CozyOrCompact.lower() == 'compact':
+		if cozy_or_compact.lower() == 'compact':
 			body = {'message_display_compact': True}
 		else:
 			body = {'message_display_compact': False}
@@ -354,7 +293,7 @@ class User(object):
 	'''
 	Notifications
 	'''
-	def set_af_ktimeout(self, timeout_seconds):
+	def set_afk_timeout(self, timeout_seconds):
 		url = self.fosscord+'users/@me/settings'
 		body = {'afk_timeout': timeout_seconds}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
@@ -375,14 +314,6 @@ class User(object):
 		body = {'developer_mode': enable}
 		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
 
-	def activate_application_test_mode(self, application_id):
-		url = self.fosscord+'applications/'+application_id+'/skus'
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def get_application_data(self, application_id, with_guild):
-		url = self.fosscord+'applications/'+application_id+'/public?with_guild='+str(with_guild).lower()
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
 	# ACTIVITY SETTINGS
 	'''
 	Activity Status
@@ -393,144 +324,14 @@ class User(object):
 		Wrapper.send_request(self.s, 'patch', url, body, timeout=timeout, log=self.log)
 
 	# OTHER SETTINGS
-	'''
-	HypeSquad
-	'''
-	def set_hypesquad(self, house):
-		url = self.fosscord+'hypesquad/online'
-		if house.lower() == 'bravery':
-			body = {'house_id': 1}
-		elif house.lower() == 'brilliance':
-			body = {'house_id': 2}
-		elif house.lower() == 'balance':
-			body = {'house_id': 3}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	def leave_hypesquad(self):
-		url = self.fosscord+'hypesquad/online'
-		return Wrapper.send_request(self.s, 'delete', url, log=self.log)
 
 	'''
 	Developer Options
 	'''
-	def get_build_overrides(self):
-		url = 'https://fosscord.com/__development/build_overrides'
-		return Wrapper.send_request(self.s, 'get', url, header_modifications={'remove':['Authorization', 'X-Super-Properties', 'X-Fingerprint']}, log=self.log)
-
 	def enable_source_maps(self, enable):
 		url = 'https://fosscord.com/__development/source_maps'
 		if enable:
 			return Wrapper.send_request(self.s, 'put', url, header_modifications={'remove':['X-Super-Properties', 'X-Fingerprint']}, log=self.log)
 		else:
 			return Wrapper.send_request(self.s, 'delete', url, header_modifications={'remove':['X-Super-Properties', 'X-Fingerprint']}, log=self.log)
-
-	'''
-	Notification Settings
-	'''
-	@staticmethod
-	def index(input_list, search_item): #only used for notification settings, returning -1 doesn't make sense in this context
-		try:
-			return input_list.index(search_item)
-		except ValueError:
-			return 0
-
-	def suppress_everyone_pings(self, guild_id, suppress):
-		url = self.fosscord+'users/@me/guilds/'+str(guild_id)+'/settings'
-		body = {'suppress_everyone': suppress}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def suppress_role_mentions(self, guild_id, suppress):
-		url = self.fosscord+'users/@me/guilds/'+str(guild_id)+'/settings'
-		body = {'suppress_roles': suppress}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def enable_mobile_push_notifications(self, guild_id, enable):
-		url = self.fosscord+'users/@me/guilds/'+str(guild_id)+'/settings'
-		body = {'mobile_push': enable}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def set_channel_notification_overrides(self, guild_id, overrides):
-		url = self.fosscord+'users/@me/guilds/'+str(guild_id)+'/settings'
-		if type(overrides[0]) in (tuple, list):
-			msg_notification_types = ['all messages', 'only mentions', 'nothing']
-			overrides = {str(channel):{'message_notifications': self.index(msg_notification_types, msg.lower()), 'muted':muted} for channel,msg,muted in overrides}
-		body = {'channel_overrides': overrides}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def set_message_notifications(self, guild_id, notifications):
-		url = self.fosscord+'users/@me/guilds/'+str(guild_id)+'/settings'
-		msg_notification_types = ['all messages', 'only mentions', 'nothing']
-		body = {'message_notifications': self.index(msg_notification_types, notifications.lower())}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def mute_guild(self, guild_id, mute, duration):
-		url = self.fosscord+'users/@me/guilds/'+str(guild_id)+'/settings'
-		body = {'muted': mute}
-		if mute and duration is not None:
-			end_time = (datetime.datetime.utcnow()+datetime.timedelta(minutes=duration)).isoformat()[:-3]+'Z' #https://stackoverflow.com/a/54272238/14776493
-			body['mute_config'] = {'selected_time_window':duration, 'end_time':end_time}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def mute_dm(self, DMID, mute, duration):
-		url = self.fosscord+'users/@me/guilds/%40me/settings'
-		data = {'muted': mute}
-		if mute:
-			if duration is not None:
-				end_time = (datetime.datetime.utcnow()+datetime.timedelta(minutes=duration)).isoformat()[:-3]+'Z'
-				data['mute_config'] = {'selected_time_window':duration, 'end_time':end_time}
-			else:
-				data['mute_config'] = {'selected_time_window':-1, 'end_time':None}
-		body = {'channel_overrides':{str(DMID):data}}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def set_thread_notifications(self, thread_id, notifications):
-		url = self.fosscord+'channels/'+thread_id+'/thread-members/@me/settings'
-		thread_notification_types = ['all messages', 'only mentions', 'nothing']
-		flags = 1<<(self.index(thread_notification_types, notifications.lower())+1)
-		body = {'flags': flags}
-		return Wrapper.send_request(self.s, 'patch', url, body, log=self.log)
-
-	def get_report_menu(self):
-		url = self.fosscord+'reporting/menu/first_dm'
-		return Wrapper.send_request(self.s, 'get', url, log=self.log)
-
-	def report_spam(self, channel_id, message_id, report_type, guild_id, version, variant, language):
-		url = self.fosscord+'reporting/'+report_type
-		body = {
-			'id': Snowflake.get_snowflake(),
-			'version': version,
-			'variant': variant,
-			'language': language,
-			'breadcrumbs': [7],
-			'elements': {},
-			'name': report_type,
-			'channel_id': channel_id,
-			'message_id': message_id,
-		}
-		if report_type in ('guild_directory_entry', 'stage_channel', 'guild'):
-			body['guild_id'] = guild_id
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	def get_handoff_token(self, key):
-		url = self.fosscord+'auth/handoff'
-		body = {'key': key}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	def invite_to_call(self, channel_id, user_ids):
-		url = self.fosscord+'channels/'+channel_id+'/call/ring'
-		body = {'recipients': user_ids}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	def decline_call(self, channel_id):
-		url = self.fosscord+'channels/'+channel_id+'/call/stop-ringing'
-		body = {}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
-
-	'''
-	Logout
-	'''
-	def logout(self, provider, voip_provider):
-		url = self.fosscord+'auth/logout'
-		body = {'provider': provider, 'voip_provider': voip_provider}
-		return Wrapper.send_request(self.s, 'post', url, body, log=self.log)
 
